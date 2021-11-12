@@ -1,6 +1,6 @@
 def index_before(text: str, search: str, start_index=None, require_found=True) -> int:
   index = text.find(search, start_index)
-  if require_found and index == -1:
+  if require_found and index < 0:
     raise Exception('Failed to find search string %s.' % search)
   return index
 

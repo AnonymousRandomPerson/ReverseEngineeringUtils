@@ -7,24 +7,25 @@ def transform_asm():
   with open(raw_file, 'r') as file:
     raw_asm = file.read()
 
-  replaced_asm = raw_asm.replace(',l', ', l').replace(',r', ', r').replace('.4byte', '.word')
+  replaced_asm = raw_asm.replace(',l', ', l').replace(',r', ', r').replace('.4byte', '.word').replace('r10', 'sl')
   transformed_asm = ''
   for line in replaced_asm.split('\n')[2:-2]:
-    match = re.search(', \d+$', line)
-    if match:
-      number_start = match.start() + 2
-      number = int(line[number_start : match.end()])
-      if number == 0 and 'mov' not in line:
-        number = str(number)
+    if '.align' not in line:
+      decimal_match = re.search(', \d+$', line)
+      if decimal_match:
+        number_start = decimal_match.start() + 2
+        number = int(line[number_start : decimal_match.end()])
+        if number == 0 and 'mov' not in line:
+          number = str(number)
+        else:
+          number = hex(number)
+        line = line[:number_start] + '#' + number
       else:
-        number = hex(number)
-      line = line[:number_start] + '#' + number
-    else:
-      match = re.search(', 0x[\dABCDEF]+]?$', line)
-      if match:
-        number_start = match.start() + 2
-        number = line[number_start : match.end()]
-        line = line[:number_start] + '#' + number.lower()
+        hex_match = re.search(', 0x[\dABCDEF]+]?$', line)
+        if hex_match:
+          number_start = hex_match.start() + 2
+          number = line[number_start : hex_match.end()]
+          line = line[:number_start] + '#' + number.lower()
     transformed_asm += line + '\n'
 
   transformed_file = os.path.join('asm', 'transformed.txt')

@@ -1,9 +1,8 @@
 from io import TextIOWrapper
+from filePaths import PRET_FOLDER
 from textUtils import *
 from transformAsm import get_asm_unified, transform_asm
 import os
-
-pret_folder = os.path.join(os.sep, 'Users', 'chenghanng', 'Documents', 'PRET', 'pmd-red')
 
 function_location = 'code_80718D8'
 function_name = 'DecideUseItem'
@@ -15,13 +14,13 @@ def overwrite_file(file: TextIOWrapper, text: str):
   file.write(text)
   file.truncate()
 
-makefile = os.path.join(pret_folder, 'Makefile')
+makefile = os.path.join(PRET_FOLDER, 'Makefile')
 with open(makefile, 'r+') as file:
   contents = file.read()
   contents = contents.replace('sha1sum', 'shasum')
   overwrite_file(file, contents)
 
-old_asm_path = os.path.join(pret_folder, 'asm', function_location + '.s')
+old_asm_path = os.path.join(PRET_FOLDER, 'asm', function_location + '.s')
 with open(old_asm_path, 'r+') as file:
   contents = file.read()
   function_index = index_before(contents, '\tthumb_func_start ' + function_name)
@@ -45,7 +44,7 @@ with open(raw_asm_file, 'w') as file:
 
 transform_asm()
 
-new_asm_path = os.path.join(pret_folder, 'asm', new_asm_location + '.s')
+new_asm_path = os.path.join(PRET_FOLDER, 'asm', new_asm_location + '.s')
 with open(new_asm_path, 'w') as file:
   header = """\t.include "constants/gba_constants.inc"
 \t.include "asm/macros.inc"
@@ -56,7 +55,7 @@ with open(new_asm_path, 'w') as file:
 """
   file.write(header + after_function_text)
 
-new_location_header = os.path.join(pret_folder, 'include', new_location + '.h')
+new_location_header = os.path.join(PRET_FOLDER, 'include', new_location + '.h')
 with open(new_location_header, 'w') as file:
   caps_new_location = new_location.upper()
 
@@ -70,7 +69,7 @@ with open(new_location_header, 'w') as file:
 """ % (caps_new_location, caps_new_location, function_header)
   file.write(source)
 
-new_location_source = os.path.join(pret_folder, 'src', new_location + '.c')
+new_location_source = os.path.join(PRET_FOLDER, 'src', new_location + '.c')
 with open(new_location_source, 'w') as file:
   asm_unified = get_asm_unified(function_text)
   source = """#include "global.h"
@@ -84,7 +83,7 @@ NAKED
 """ % (new_location, function_header, asm_unified)
   file.write(source)
 
-ld_script = os.path.join(pret_folder, 'ld_script.txt')
+ld_script = os.path.join(PRET_FOLDER, 'ld_script.txt')
 with open(ld_script, 'r+') as file:
   contents = file.read()
   contents = insert_after(contents, 'asm/%s.o(.text);\n' % function_location, '        src/%s.o(.text);\n        asm/%s.o(.text);\n' % (new_location, new_asm_location))

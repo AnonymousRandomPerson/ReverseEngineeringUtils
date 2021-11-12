@@ -1,8 +1,6 @@
 from typing import Dict, List
 import binascii
-import os
-
-GAME_FILE_PATH = os.path.join('..', 'Games', 'Pokemon Mystery Dungeon Red Rescue Team', 'Pokemon Mystery Dungeon - Red Rescue Team (U).gba')
+from filePaths import GAME_FILE_PATH
 
 def read_offset_data(init_offset: int, num_elements: int, data_size: int = 1, data_offset: int = 0, read_size: int = 1, index_dict: Dict[int, str] = None, include_unknown: bool = False, binary_values: bool = False, decimal_values: bool = False, mask: int = None):
   field_map: Dict[int, List] = {}
