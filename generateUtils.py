@@ -1,7 +1,7 @@
 import binascii, os
 from dataclasses import dataclass, field
 from io import BufferedReader
-from typing import Dict, List
+from typing import Dict, List, Set
 from data.itemData import item_map
 from data.moveData import move_map
 from data.speciesData import species_list
@@ -17,6 +17,11 @@ class JsonStringField:
 class StringDefinition:
   definition: str
   constant_name: str
+
+@dataclass
+class SpecialCharDefinition:
+  sequence: List[str]
+  keyword: str
 
 def get_current_address(game_file: BufferedReader) -> str:
   return '0x' + format(game_file.tell() + 0x08000000, '08x')
@@ -106,45 +111,135 @@ def add_string_definition(game_file: BufferedReader, string_addresses: Dict[str,
     # print('Found duplicate constant for %s: %s.' % (constant_name, existing_constant))
     return existing_constant
 
-  string_addresses[address] = StringDefinition(get_string_definition(constant_name, read_string(game_file, address), align), constant_name)
+  string_addresses[address] = StringDefinition(StringDefinitionBuilder().get_string_definition(constant_name, read_string(game_file, address), align), constant_name)
   return constant_name
 
-def get_string_definition(constant_name: str, string: str, align=True):
-  string = string.replace('¾', '♀').replace('½', '♂').replace('\n', '\\n')
-  string += '\\0'
-  string_data = ''
-  is_string = None
-  for char in string:
-    char_ord = ord(char)
-    # 0xE9 is é.
-    current_is_string = char_ord < 0x7F or char_ord == 0xE9 or char == '♂' or char == '♀'
+def sequence_ord(text: str):
+  return [ord(c) for c in text]
 
-    if current_is_string:
-      if is_string is not True:
-        if is_string is not None:
-          string_data += '\n'
-        string_data += '.string "'
-      string_data += char
-    elif not current_is_string:
-      if is_string is not False:
-        if is_string is not None:
-          string_data += '"\n'
-        string_data += '.byte'
+class StringDefinitionBuilder:
+
+  special_char_sequences: Dict[str, SpecialCharDefinition] = {}
+  accepted_special_chars: Set[str] = set()
+
+  def initialize_special_char_sequences():
+    special_char_definitions = [
+      SpecialCharDefinition([0x81, 0x48], '？'),
+      SpecialCharDefinition([0x82, 0xA4], 'う'),
+      SpecialCharDefinition([0x82, 0xAA], 'か'),
+      SpecialCharDefinition([0x82, 0xB7], 'す'),
+      SpecialCharDefinition([0x82, 0xC8], 'な'),
+      SpecialCharDefinition([0x82, 0xC9], 'に'),
+      SpecialCharDefinition([0x82, 0xCC], 'も'),
+      SpecialCharDefinition([0x82, 0xDC], 'み'),
+      SpecialCharDefinition([0x82, 0xDD], 'ま'),
+      SpecialCharDefinition([0x82, 0xE0], 'の'),
+      SpecialCharDefinition([0x82, 0xE6], 'よ'),
+      SpecialCharDefinition([0x82, 0xE9], 'る'),
+      SpecialCharDefinition([0x82, 0xF0], 'を'),
+      SpecialCharDefinition([0x82, 0xF1], 'ん'),
+      SpecialCharDefinition([0x83, 0xBF, 0x83, 0xC4], 'POKE'),
+      SpecialCharDefinition([0x87, 0x4E], 'TM'),
+      SpecialCharDefinition([0x87, 0x4F], 'ORB'),
+      SpecialCharDefinition(sequence_ord('#CD'), 'COLOR_1 YELLOW_3'),
+      SpecialCharDefinition(sequence_ord('#c4'), 'COLOR_2 GREEN'),
+      SpecialCharDefinition(sequence_ord('#c5'), 'COLOR_2 CYAN'),
+      SpecialCharDefinition(sequence_ord('#c6'), 'COLOR_2 YELLOW'),
+      SpecialCharDefinition(sequence_ord('#R'), 'END_COLOR_TEXT_1'),
+      SpecialCharDefinition(sequence_ord('#r'), 'END_COLOR_TEXT_2'),
+    ]
+    for definition in special_char_definitions:
+      first_char = definition.sequence[0]
+      if first_char not in StringDefinitionBuilder.special_char_sequences:
+        StringDefinitionBuilder.special_char_sequences[first_char] = []
+      StringDefinitionBuilder.special_char_sequences[first_char].append(definition)
+      if len(definition.keyword) == 1:
+        StringDefinitionBuilder.accepted_special_chars.add(definition.keyword)
+
+  def append_char(self, char: str):
+    if len(char) == 1:
+      char_ord = ord(char)
+      # 0xE9 is é.
+      self.current_is_string = char_ord < 0x7F or char_ord == 0xE9 or char == '♂' or char == '♀' or char in StringDefinitionBuilder.accepted_special_chars
+    else:
+      self.current_is_string = True
+
+    if self.current_is_string:
+      if self.is_string is not True:
+        if self.is_string is not None:
+          self.string_data += '\n'
+        self.string_data += '.string "'
+      self.string_data += char
+    elif not self.current_is_string:
+      if self.is_string is not False:
+        if self.is_string is not None:
+          self.string_data += '"\n'
+        self.string_data += '.byte'
       else:
-        string_data += ','
-      string_data += ' 0x' + format(ord(char), '02x')
+        self.string_data += ','
+      self.string_data += ' 0x' + format(ord(char), '02x')
 
-    is_string = current_is_string
+    self.is_string = self.current_is_string
 
-  if is_string:
-    string_data += '"'
+  def get_string_definition(self, constant_name: str, string: str, align=True):
+    if len(StringDefinitionBuilder.special_char_sequences) == 0:
+      StringDefinitionBuilder.initialize_special_char_sequences()
 
-  string_def = '.global %s\n' % constant_name
-  string_def += '%s:\n' % constant_name
-  string_def += string_data + '\n'
-  if align:
-    string_def += '.align 2,0\n'
-  return string_def
+    string = string.replace('¾', '♀').replace('½', '♂').replace('\n', '\\n')
+    string += '\\0'
+    self.string_data = ''
+    self.is_string = None
+    special_chars: List[str] = None
+    for char in string:
+      char_ord = ord(char)
+      if special_chars is not None:
+        special_chars.append(char_ord)
+
+        continue_special_char = False
+        matching_definition = None
+        for definition in StringDefinitionBuilder.special_char_sequences[special_chars[0]]:
+          if len(definition.sequence) < len(special_chars):
+            continue
+          match = True
+          for i in range(1, len(special_chars)):
+            if special_chars[i] != definition.sequence[i]:
+              match = False
+              break
+          if match:
+            if len(definition.sequence) > len(special_chars):
+              continue_special_char = True
+            else:
+              matching_definition = definition
+            break
+
+        if continue_special_char:
+          continue
+        elif matching_definition is not None:
+          keyword = matching_definition.keyword
+          if len(keyword) > 1:
+            keyword = '{%s}' % keyword
+          self.append_char(keyword)
+          special_chars = None
+          continue
+        else:
+          for special_char in special_chars[:-1]:
+            self.append_char(chr(special_char))
+          special_chars = None
+      elif char_ord in StringDefinitionBuilder.special_char_sequences:
+        special_chars = [char_ord]
+        continue
+
+      self.append_char(char)
+
+    if self.is_string:
+      self.string_data += '"'
+
+    string_def = '.global %s\n' % constant_name
+    string_def += '%s:\n' % constant_name
+    string_def += self.string_data + '\n'
+    if align:
+      string_def += '.align 2,0\n'
+    return string_def
 
 def generate_string_file(game_file: BufferedReader, json_array: List[Dict], file_name: str, json_fields: List[JsonStringField], align=True):
   string_addresses: Dict[str, StringDefinition] = {}
