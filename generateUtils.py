@@ -141,12 +141,20 @@ class StringDefinitionBuilder:
       SpecialCharDefinition([0x83, 0xBF, 0x83, 0xC4], 'POKE'),
       SpecialCharDefinition([0x87, 0x4E], 'TM'),
       SpecialCharDefinition([0x87, 0x4F], 'ORB'),
-      SpecialCharDefinition(sequence_ord('#CD'), 'COLOR_1 YELLOW_3'),
+      SpecialCharDefinition(sequence_ord('#CD'), 'COLOR_1 YELLOW_4'),
+      SpecialCharDefinition(sequence_ord('#CN'), 'COLOR_1 YELLOW_5'),
       SpecialCharDefinition(sequence_ord('#c4'), 'COLOR_2 GREEN'),
       SpecialCharDefinition(sequence_ord('#c5'), 'COLOR_2 CYAN'),
       SpecialCharDefinition(sequence_ord('#c6'), 'COLOR_2 YELLOW'),
       SpecialCharDefinition(sequence_ord('#R'), 'END_COLOR_TEXT_1'),
       SpecialCharDefinition(sequence_ord('#r'), 'END_COLOR_TEXT_2'),
+      SpecialCharDefinition(sequence_ord('#n'), 'NEW_LINE'),
+      SpecialCharDefinition(sequence_ord('~27'), 'APOSTROPHE'),
+      SpecialCharDefinition(sequence_ord('~2c'), 'COMMA'),
+      SpecialCharDefinition(sequence_ord('~93'), 'QUOTE_START'),
+      SpecialCharDefinition(sequence_ord('~94'), 'QUOTE_END'),
+      SpecialCharDefinition(sequence_ord('$m0'), 'ARG_POKEMON_0'),
+      SpecialCharDefinition(sequence_ord('$i0'), 'ARG_MOVE_ITEM_0'),
     ]
     for definition in special_char_definitions:
       first_char = definition.sequence[0]

@@ -4,10 +4,11 @@ from textUtils import *
 from transformAsm import get_asm_unified, transform_asm
 import os
 
-function_location = 'code_80718D8'
-function_name = 'DecideUseItem'
-function_header = 'void %s(struct DungeonEntity *pokemon)' % function_name
-new_location = 'dungeon_ai_items'
+function_location = 'code_80428A0'
+function_name = 'SetAction'
+function_header = 'void %s(u16 *actionPointer, u16 action)' % function_name
+new_location = 'dungeon_action'
+next_function_address = '804ACA0'
 
 def overwrite_file(file: TextIOWrapper, text: str):
   file.seek(0)
@@ -31,9 +32,12 @@ with open(old_asm_path, 'r+') as file:
   next_function_name = text_between(after_function_text, 'thumb_func_start ', '\n')
   if 'sub_' in next_function_name:
     new_asm_location = next_function_name.replace('sub_', 'code_')
+  elif next_function_address is None:
+    print('Next ASM function is already named %s. Enter the next address manually.' % next_function_name)
+    exit(0)
   else:
-    new_asm_location = 'code_' + next_function_name
-    print('Next ASM function is already named. Using %s for new ASM file name.' % new_asm_location)
+    new_asm_location = 'code_' + next_function_address
+    print('Next ASM function is already named. Using manual function address for file name: %s.' % new_asm_location)
 
   contents = contents[:function_index] + '\t.align 2, 0'
   overwrite_file(file, contents)
