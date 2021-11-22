@@ -4,11 +4,11 @@ from textUtils import *
 from transformAsm import get_asm_unified, transform_asm
 import os
 
-function_location = 'code_80428A0'
-function_name = 'SetAction'
-function_header = 'void %s(u16 *actionPointer, u16 action)' % function_name
-new_location = 'dungeon_action'
-next_function_address = '804ACA0'
+function_location = 'code_80739DC'
+function_name = 'FindStraightThrowableTargets'
+function_header = 'void %s(struct DungeonEntity* pokemon, s32 thrownAIFlag, struct ItemSlot* item, bool8 ignoreRollChance)' % function_name
+new_location = 'dungeon_ai_items'
+next_function_address = '8073AA0'
 
 def overwrite_file(file: TextIOWrapper, text: str):
   file.seek(0)
@@ -20,6 +20,9 @@ with open(makefile, 'r+') as file:
   contents = file.read()
   contents = contents.replace('sha1sum', 'shasum')
   overwrite_file(file, contents)
+
+new_location_header = os.path.join(PRET_FOLDER, 'include', new_location + '.h')
+existing_file = os.path.exists(new_location_header)
 
 old_asm_path = os.path.join(PRET_FOLDER, 'asm', function_location + '.s')
 with open(old_asm_path, 'r+') as file:
@@ -40,7 +43,10 @@ with open(old_asm_path, 'r+') as file:
     print('Next ASM function is already named. Using manual function address for file name: %s.' % new_asm_location)
 
   contents = contents[:function_index] + '\t.align 2, 0'
-  overwrite_file(file, contents)
+  if 'thumb' in contents:
+    overwrite_file(file, contents)
+  else:
+    os.remove(old_asm_path)
 
 raw_asm_file = os.path.join('asm', 'raw.txt')
 with open(raw_asm_file, 'w') as file:
@@ -59,36 +65,57 @@ with open(new_asm_path, 'w') as file:
 """
   file.write(header + after_function_text)
 
-new_location_header = os.path.join(PRET_FOLDER, 'include', new_location + '.h')
-with open(new_location_header, 'w') as file:
-  caps_new_location = new_location.upper()
-
-  source = """#ifndef GUARD_%s_H
-#define GUARD_%s_H
-
-// 0x
+if existing_file:
+  with open(new_location_header, 'r+') as file:
+    contents = file.read()
+    function_header_insert ="""// 0x
 %s;
+""" % function_header
+    contents = insert_before(contents, '\n#endif', function_header_insert)
+    overwrite_file(file, contents)
+else:
+  with open(new_location_header, 'w') as file:
+    caps_new_location = new_location.upper()
 
-#endif
-""" % (caps_new_location, caps_new_location, function_header)
-  file.write(source)
+    source = """#ifndef GUARD_%s_H
+  #define GUARD_%s_H
+
+  // 0x
+  %s;
+
+  #endif
+  """ % (caps_new_location, caps_new_location, function_header)
+    file.write(source)
 
 new_location_source = os.path.join(PRET_FOLDER, 'src', new_location + '.c')
-with open(new_location_source, 'w') as file:
-  asm_unified = get_asm_unified(function_text)
-  source = """#include "global.h"
-#include "%s.h"
-
-NAKED
+asm_unified = get_asm_unified(function_text)
+asm_unified = """NAKED
 %s
 {
     %s
-}
-""" % (new_location, function_header, asm_unified)
-  file.write(source)
+}""" % (function_header, asm_unified)
+if existing_file:
+  with open(new_location_source, 'r+') as file:
+    contents = file.read()
+    contents = contents + '\n' + asm_unified + '\n'
+    overwrite_file(file, contents)
+else:
+  with open(new_location_source, 'w') as file:
+    source = """#include "global.h"
+  #include "%s.h"
+
+  %s
+  """ % (new_location, asm_unified)
+    file.write(source)
 
 ld_script = os.path.join(PRET_FOLDER, 'ld_script.txt')
 with open(ld_script, 'r+') as file:
   contents = file.read()
-  contents = insert_after(contents, 'asm/%s.o(.text);\n' % function_location, '        src/%s.o(.text);\n        asm/%s.o(.text);\n' % (new_location, new_asm_location))
+  script_insert = 'asm/%s.o(.text);\n' % new_asm_location
+  anchor_file = 'asm/%s.o(.text);\n' % function_location
+  if existing_file:
+    contents = contents.replace(anchor_file, script_insert)
+  else:
+    script_insert = ('        src/%s.o(.text);\n' % new_location) + '        ' + script_insert
+    contents = insert_after(contents, anchor_file, script_insert)
   overwrite_file(file, contents)

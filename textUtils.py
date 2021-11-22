@@ -7,6 +7,10 @@ def index_before(text: str, search: str, start_index=None, require_found=True) -
 def index_after(text: str, search: str, start_index=None, require_found=True) -> int:
   return index_before(text, search, start_index, require_found) + len(search)
 
+def insert_before(text: str, search: str, new_text: str) -> str:
+  index = index_before(text, search)
+  return text[:index] + new_text + text[index:]
+
 def insert_after(text: str, search: str, new_text: str) -> str:
   index = index_after(text, search)
   return text[:index] + new_text + text[index:]
