@@ -15,12 +15,6 @@ def overwrite_file(file: TextIOWrapper, text: str):
   file.write(text)
   file.truncate()
 
-makefile = os.path.join(PRET_FOLDER, 'Makefile')
-with open(makefile, 'r+') as file:
-  contents = file.read()
-  contents = contents.replace('sha1sum', 'shasum')
-  overwrite_file(file, contents)
-
 new_location_header = os.path.join(PRET_FOLDER, 'include', new_location + '.h')
 existing_file = os.path.exists(new_location_header)
 
