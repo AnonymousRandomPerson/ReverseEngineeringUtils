@@ -4,11 +4,11 @@ from textUtils import *
 from transformAsm import get_asm_unified, transform_asm
 import os
 
-function_location = 'code_80739DC'
-function_name = 'FindStraightThrowableTargets'
-function_header = 'void %s(struct DungeonEntity* pokemon, s32 thrownAIFlag, struct ItemSlot* item, bool8 ignoreRollChance)' % function_name
+function_location = 'code_8073AA0'
+function_name = 'FindRockItemTargets'
+function_header = 'void %s(struct DungeonEntity* pokemon, struct ItemSlot* item, s16* potentialTargets[], bool8 ignoreRollChance)' % function_name
 new_location = 'dungeon_ai_items'
-next_function_address = '8073AA0'
+next_function_address = '8073B78'
 
 def overwrite_file(file: TextIOWrapper, text: str):
   file.seek(0)
@@ -26,15 +26,23 @@ with open(old_asm_path, 'r+') as file:
   function_text = contents[function_index:function_end_index]
   after_function_text = contents[function_end_index:]
 
-  next_function_name = text_between(after_function_text, 'thumb_func_start ', '\n')
-  if 'sub_' in next_function_name:
-    new_asm_location = next_function_name.replace('sub_', 'code_')
-  elif next_function_address is None:
-    print('Next ASM function is already named %s. Enter the next address manually.' % next_function_name)
-    exit(0)
+  try:
+    next_function_name = text_between(after_function_text, 'thumb_func_start ', '\n')
+  except AssertionError:
+    print('No function found after %s.' % function_name)
+    next_function_name = None
+
+  if next_function_name:
+    if 'sub_' in next_function_name:
+      new_asm_location = next_function_name.replace('sub_', 'code_')
+    elif next_function_address is None:
+      print('Next ASM function is already named %s. Enter the next address manually.' % next_function_name)
+      exit(0)
+    else:
+      new_asm_location = 'code_' + next_function_address
+      print('Next ASM function is already named. Using manual function address for file name: %s.' % new_asm_location)
   else:
-    new_asm_location = 'code_' + next_function_address
-    print('Next ASM function is already named. Using manual function address for file name: %s.' % new_asm_location)
+    new_asm_location = None
 
   contents = contents[:function_index] + '\t.align 2, 0'
   if 'thumb' in contents:
@@ -48,16 +56,17 @@ with open(raw_asm_file, 'w') as file:
 
 transform_asm()
 
-new_asm_path = os.path.join(PRET_FOLDER, 'asm', new_asm_location + '.s')
-with open(new_asm_path, 'w') as file:
-  header = """\t.include "constants/gba_constants.inc"
-\t.include "asm/macros.inc"
+if new_asm_location:
+  new_asm_path = os.path.join(PRET_FOLDER, 'asm', new_asm_location + '.s')
+  with open(new_asm_path, 'w') as file:
+    header = """\t.include "constants/gba_constants.inc"
+  \t.include "asm/macros.inc"
 
-\t.syntax unified
+  \t.syntax unified
 
-\t.text
-"""
-  file.write(header + after_function_text)
+  \t.text
+  """
+    file.write(header + after_function_text)
 
 if existing_file:
   with open(new_location_header, 'r+') as file:
@@ -65,19 +74,23 @@ if existing_file:
     function_header_insert ="""// 0x
 %s;
 """ % function_header
-    contents = insert_before(contents, '\n#endif', function_header_insert)
+    if new_asm_location:
+      search_before = '\n#endif'
+    else:
+      search_before = '\n// 0x'
+    contents = insert_before(contents, search_before, function_header_insert)
     overwrite_file(file, contents)
 else:
   with open(new_location_header, 'w') as file:
     caps_new_location = new_location.upper()
 
     source = """#ifndef GUARD_%s_H
-  #define GUARD_%s_H
+#define GUARD_%s_H
 
-  // 0x
-  %s;
+// 0x
+%s;
 
-  #endif
+#endif
   """ % (caps_new_location, caps_new_location, function_header)
     file.write(source)
 
@@ -96,20 +109,23 @@ if existing_file:
 else:
   with open(new_location_source, 'w') as file:
     source = """#include "global.h"
-  #include "%s.h"
+#include "%s.h"
 
-  %s
-  """ % (new_location, asm_unified)
+%s
+""" % (new_location, asm_unified)
     file.write(source)
 
 ld_script = os.path.join(PRET_FOLDER, 'ld_script.txt')
 with open(ld_script, 'r+') as file:
   contents = file.read()
-  script_insert = 'asm/%s.o(.text);\n' % new_asm_location
+  new_asm_file = 'asm/%s.o(.text);\n' % new_asm_location
   anchor_file = 'asm/%s.o(.text);\n' % function_location
   if existing_file:
-    contents = contents.replace(anchor_file, script_insert)
+    if new_asm_location:
+      contents = contents.replace(anchor_file, new_asm_file)
   else:
-    script_insert = ('        src/%s.o(.text);\n' % new_location) + '        ' + script_insert
+    script_insert = ('        src/%s.o(.text);\n' % new_location)
+    if new_asm_location:
+      script_insert = script_insert + '        ' + new_asm_file
     contents = insert_after(contents, anchor_file, script_insert)
   overwrite_file(file, contents)
