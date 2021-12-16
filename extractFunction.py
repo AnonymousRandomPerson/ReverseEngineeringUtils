@@ -4,11 +4,11 @@ from textUtils import *
 from transformAsm import get_asm_unified, transform_asm
 import os
 
-function_location = 'code_8073AA0'
-function_name = 'FindRockItemTargets'
-function_header = 'void %s(struct DungeonEntity* pokemon, struct ItemSlot* item, s16* potentialTargets[], bool8 ignoreRollChance)' % function_name
-new_location = 'dungeon_ai_items'
-next_function_address = '8073B78'
+function_location = 'code_8075BA4'
+function_name = 'InSameRoom_2'
+function_header = 'bool8 %s(struct Position *pos1, struct Position *pos2)' % function_name
+new_location = 'dungeon_range'
+next_function_address = '808333C'
 
 def overwrite_file(file: TextIOWrapper, text: str):
   file.seek(0)
@@ -91,7 +91,7 @@ else:
 %s;
 
 #endif
-  """ % (caps_new_location, caps_new_location, function_header)
+""" % (caps_new_location, caps_new_location, function_header)
     file.write(source)
 
 new_location_source = os.path.join(PRET_FOLDER, 'src', new_location + '.c')

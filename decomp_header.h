@@ -24,10 +24,16 @@ struct PokemonMove
     u8 powerBoost; // How much the move is boosted by Ginsengs.
 };
 
-struct RoomExit
+struct Position
 {
     s16 x;
     s16 y;
+};
+
+struct Position32
+{
+    s32 x;
+    s32 y;
 };
 
 struct MapTile
@@ -48,6 +54,15 @@ struct MapTile
     u8 fillE[0x10 - 0xE];
     /* 0x10 */ struct DungeonEntity *pokemon; // Pokémon on the tile.
     /* 0x14 */ struct DungeonEntity *mapObject; // Item or trap on the tile.
+};
+
+struct MapRoom
+{
+    u8 fill0[0x2 - 0x0];
+    // All coordinates are inclusive.
+    /* 0x2 */ struct Position start;
+    /* 0x6 */ struct Position end;
+    u8 fillA[0x1C - 0xA];
 };
 
 struct DungeonGlobalData
@@ -108,10 +123,12 @@ struct DungeonGlobalData
     /* 0xE278 */ u8 waterSportTurnsLeft;
     u8 fillE279[0xE8C0 - 0xE279];
     /* 0xE8C0 */ u32 mapEntityPointers[DUNGEON_MAX_SIZE_X * DUNGEON_MAX_SIZE_Y];
-    u8 fill10364[0x10844 - 0x10364];
+    u8 fill10364[0x104C4 - 0x10364];
+    /* 0x104C4 */ struct MapRoom roomData[MAX_ROOM_COUNT];
+    u8 fill10604[0x10844 - 0x107C4];
     /* 0x10844 */ u16 numRoomExits[MAX_ROOM_COUNT];
     u8 fill10874[0x10884 - 0x10874];
-    /* 0x10884 */ struct RoomExit roomExits[MAX_ROOM_COUNT][32]; // Arrays of room exits for each room.
+    /* 0x10884 */ struct Position roomExits[MAX_ROOM_COUNT][32]; // Arrays of room exits for each room.
     u8 fill11444[0x1356C - 0x11484];
     u8 unk1356C;
     u8 fill1356D[0x1357C - 0x1356D];
@@ -134,6 +151,19 @@ struct DungeonGlobalData
     u8 unk18217;
 };
 
+struct DungeonActionContainer
+{
+    /* 0x0 */ u16 action;
+    /* 0x2 */ s8 facingDir;
+    u8 fill3;
+    // Additional parameter alongside actionIndex. Used for things like indicating which move a Pokémon should use from its moveset.
+    /* 0x4 */ u8 actionUseIndex;
+    u8 fill5[0x8 - 0x5];
+    // Position of the Pokémon the last time it threw an item.
+    /* 0x8 */ struct Position lastItemThrowPosition;
+    u8 unkC;
+};
+
 struct DungeonEntityData
 {
     // This has different purposes for Pokémon, items, and traps.
@@ -143,7 +173,7 @@ struct DungeonEntityData
     /* 0x0 */ u16 flags;
     /* 0x2 */ s16 entityID; // Pokémon species or item ID.
     // Everything from here on only applies to Pokémon.
-    /* 0x4 */ u16 transformSpecies; // Shows a different Pokémon when using Transform.
+    /* 0x4 */ s16 transformSpecies; // Shows a different Pokémon when using Transform.
     /* 0x6 */ bool8 isEnemy;
     /* 0x7 */ bool8 isLeader;
     /* 0x8 */ u8 shopkeeperMode;
@@ -181,33 +211,20 @@ struct DungeonEntityData
     u8 fill3F;
     /* 0x40 */ u8 joinLocation; // Uses the dungeon index in dungeon.h.
     u8 fill41[0x44 - 0x41];
-    /* 0x44 */ u16 action;
-    /* 0x46 */ s8 facingDir;
-    u8 fill47;
-    // Additional parameter alongside actionIndex. Used for things like indicating which move a Pokémon should use from its moveset.
-    /* 0x48 */ u8 actionUseIndex;
-    u8 fill49[0x4C - 0x49];
-    // Position of the Pokémon the last time it threw an item.
-    /* 0x4C */ s16 lastItemThrowPositionX;
-    /* 0x4E */ s16 lastItemThrowPositionY;
-    u8 unk50;
-    u8 fill51[0x58 - 0x51];
+    /* 0x44 */ struct DungeonActionContainer action;
+    u8 fill55[0x58 - 0x55];
     // Position of the target that the Pokémon wants throw an item at.
-    /* 0x58 */ s16 *itemTargetPosition;
+    /* 0x58 */ struct Position itemTargetPosition;
     /* 0x5C */ u8 type1;
     /* 0x5D */ u8 type2;
     /* 0x5E */ u8 ability1;
     /* 0x5F */ u8 ability2;
     /* 0x60 */ struct ItemSlot heldItem;
     u8 fill64[0x68 - 0x64];
-    /* 0x68 */ s16 previousPosition1X;
-    /* 0x6A */ s16 previousPosition1Y;
-    /* 0x6C */ s16 previousPosition2X;
-    /* 0x6E */ s16 previousPosition2Y;
-    /* 0x70 */ s16 previousPosition3X;
-    /* 0x72 */ s16 previousPosition3Y;
-    /* 0x74 */ s16 previousPosition4X;
-    /* 0x76 */ s16 previousPosition4Y;
+    /* 0x68 */ struct Position previousPosition1;
+    /* 0x6C */ struct Position previousPosition2;
+    /* 0x70 */ struct Position previousPosition3;
+    /* 0x74 */ struct Position previousPosition4;
     /* 0x78 */ u8 movementAction;
     /* 0x79 */ bool8 notAdjacentToTarget;
     /* 0x7A */ bool8 hasTarget;
@@ -216,8 +233,7 @@ struct DungeonEntityData
     u8 fill7E[0x80 - 0x7E];
     /* 0x80 */ u32 targetPokemon;
     u8 fill84[0x88 - 0x84];
-    /* 0x88 */ s16 targetMovePositionX;
-    /* 0x8A */ s16 targetMovePositionY;
+    /* 0x88 */ struct Position targetMovePosition;
     // Bitwise flags corresponding to selected IQ skills.
     /* 0x8C */ u8 IQSkillsSelected[4]; // IQ skills selected in the IQ skills menu.
     /* 0x90 */ u8 IQSkillsEnabled[4];
@@ -318,28 +334,24 @@ struct DungeonEntityData
     u8 fill149[0x14E - 0x149];
     /* 0x14E */ u16 visualFlags;
     /* 0x150 */ u16 previousVisualFlags;
-    u8 fill152[0x15C - 0x152];
+    /* 0x152 */ u8 unk152;
+    u8 fill153[0x15C - 0x153];
     u8 unk15C;
     u8 unk15D;
     u8 unk15E;
     u8 unk15F;
     u8 fill160[0x16C - 0x160];
-    /* 0x16C */ s16 targetPositionX;
-    /* 0x16E */ s16 targetPositionY;
-    /* 0x170 */ s16 posPixelX;
-    /* 0x172 */ s16 posPixelY;
+    /* 0x16C */ struct Position targetPosition;
+    /* 0x170 */ struct Position posPixel;
     u32 unk174;
     u8 fill178[0x184 - 0x178];
     // Previous value of targetPosition for movement, 1 and 2 moves ago.
-    /* 0x184 */ s16 previousTargetMovePosition1X;
-    /* 0x186 */ s16 previousTargetMovePosition1Y;
-    /* 0x188 */ s32 previousTargetMovePosition2X;
-    /* 0x18C */ s32 previousTargetMovePosition2Y;
+    /* 0x184 */ struct Position previousTargetMovePosition1;
+    /* 0x188 */ struct Position32 previousTargetMovePosition2;
     /* 0x190 */ u8 lastMoveDirection; // The last direction that the Pokémon moved in.
     u8 fill191[0x194 - 0x191];
     // Number of tiles that the Pokémon moved last, multiplied by 0x100.
-    /* 0x194 */ s32 lastMoveIncrementX;
-    /* 0x198 */ s32 lastMoveIncrementY;
+    /* 0x194 */ struct Position32 lastMoveIncrement;
     /* 0x19C */ u8 walkAnimationCounter; // Set when the Pokémon starts moving, and counts down until the Pokémon's walk animation stops.
     u8 fill19D[0x1F4 - 0x19D];
     /* 0x1F4 */ u8 numMoveTiles; // Number of tiles to move in a turn. Can be greater than 1 if the user's movement speed is boosted.
@@ -356,16 +368,12 @@ struct DungeonEntityData
 struct DungeonEntity
 {
     /* 0x0 */ u32 entityType;
-    /* 0x4 */ s16 posWorldX;
-    /* 0x6 */ s16 posWorldY;
-    /* 0x8 */ s16 prevPosWorldX;
-    /* 0xA */ s16 prevPosWorldY;
+    /* 0x4 */ struct Position posWorld;
+    /* 0x8 */ struct Position prevPosWorld;
     // The center of the entity acccording to pixel-space coordinates, using the same origin as posWorld.
     // X = (posWorld * 24 + 16) * 256, while Y = (posWorld * 24 + 12) * 256.
-    /* 0xC */ s32 posPixelX;
-    /* 0x10 */ s32 posPixelY;
-    /* 0x14 */ s32 prevPosPixelX;
-    /* 0x18 */ s32 prevPosPixelY;
+    /* 0xC */ struct Position32 posPixel;
+    /* 0x14 */ struct Position32 prevPosPixel;
     u8 fill1C[0x20 - 0x1C];
     /* 0x20 */ bool8 visible; // Turned off when a Pokémon faints.
     u8 fill21[0x25 - 0x21];
@@ -383,24 +391,25 @@ struct DungeonEntity
     /* 0x2C */ u16 spriteAnimationIndex;
     /* 0x2E */ u16 spriteAnimationCounter2;
     // The position of the sprite within the tile. The animation may change the position slightly.
-    /* 0x30 */ u16 spritePosX;
-    /* 0x32 */ u16 spritePosY;
+    /* 0x30 */ struct Position spritePos;
     // Offset of the sprite from its position at the start of the animation. Changes alongside spritePos.
-    /* 0x34 */ s16 spritePosOffsetX;
-    /* 0x36 */ s16 spritePosOffsetY;
+    /* 0x34 */ struct Position spritePosOffset;
     u8 fill38[0x48 - 0x38];
     // The sprite index to display, among the Pokémon's possible sprites.
     /* 0x48 */ u16 spriteIndexForEntity;
     /* 0x4A */ u16 spriteIndexForEntity2;
+    u8 unk4C[0x50 - 0x4C];
     // Some kind of base sprite index depending on which way the Pokémon is facing.
     // and which animation is playing (e.g., idle, moving).
     // Compared to 0x48, 0x50 and 0x54 are much larger and could be global indexes among all sprites in the game.
     /* 0x50 */ u16 spriteBaseForDirection;
     u8 fill52[0x54 - 0x52];
     /* 0x54 */ u16 spriteGlobalIndex;
-    u8 fill56[0x6C - 0x56];
+    u8 fill56[0x6A - 0x56];
+    /* 0x6A */ u8 unk6A;
+    /* 0x6A */ u8 unk6B;
     /* 0x6C */ u8 facingDir;
     /* 0x6D */ u8 facingDir2; // Duplicate of 0x6C?
-    u8 fill6D[0x70 - 0x6D];
+    u8 fill6D[0x70 - 0x6E];
     /* 0x70 */ struct DungeonEntityData *entityData;
 };
