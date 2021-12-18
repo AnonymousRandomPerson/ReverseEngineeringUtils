@@ -7,6 +7,7 @@
 #define DUNGEON_MAX_SIZE_Y 31
 #define DUNGEON_MAX_WILD_POKEMON 16
 #define DUNGEON_MAX_POKEMON MAX_TEAM_MEMBERS + DUNGEON_MAX_WILD_POKEMON
+#define NUM_SPECIES 413
 
 struct ItemSlot
 {
@@ -64,6 +65,8 @@ struct MapRoom
     /* 0x6 */ struct Position end;
     u8 fillA[0x1C - 0xA];
 };
+
+extern struct DungeonGlobalData *gDungeonGlobalData;
 
 struct DungeonGlobalData
 {
