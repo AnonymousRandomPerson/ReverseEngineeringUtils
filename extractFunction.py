@@ -4,11 +4,11 @@ from textUtils import *
 from transformAsm import get_asm_unified, transform_asm
 import os
 
-function_location = 'code_8075BA4'
-function_name = 'InSameRoom_2'
-function_header = 'bool8 %s(struct Position *pos1, struct Position *pos2)' % function_name
-new_location = 'dungeon_range'
-next_function_address = '808333C'
+function_location = 'code_8073B78'
+function_name = 'TargetThrownItem'
+function_header = 'void %s(struct DungeonEntity *pokemon, struct DungeonEntity *targetPokemon, struct ItemSlot *item, u8 targetingFlags, bool8 ignoreRollChance)' % function_name
+new_location = 'dungeon_ai_items'
+next_function_address = '8049590'
 
 def overwrite_file(file: TextIOWrapper, text: str):
   file.seek(0)
@@ -59,8 +59,8 @@ transform_asm()
 if new_asm_location:
   new_asm_path = os.path.join(PRET_FOLDER, 'asm', new_asm_location + '.s')
   with open(new_asm_path, 'w') as file:
-    header = """\t.include "constants/gba_constants.inc"
-  \t.include "asm/macros.inc"
+    header = """\t#include "asm/constants/gba_constants.inc"
+  \t#include "asm/macros.inc"
 
   \t.syntax unified
 
