@@ -4,11 +4,11 @@ from textUtils import *
 from transformAsm import get_asm_unified, transform_asm
 import os
 
-function_location = 'code_8073B78'
-function_name = 'TargetThrownItem'
-function_header = 'void %s(struct DungeonEntity *pokemon, struct DungeonEntity *targetPokemon, struct ItemSlot *item, u8 targetingFlags, bool8 ignoreRollChance)' % function_name
-new_location = 'dungeon_ai_items'
-next_function_address = '8049590'
+function_location = 'code_8075BA4'
+function_name = 'IsTargetStraightAhead'
+function_header = 'bool8 %s(struct DungeonEntity *pokemon, struct DungeonEntity *targetPokemon, s32 facingDir, s32 maxRange)' % function_name
+new_location = 'dungeon_ai_attack'
+next_function_address = None
 
 def overwrite_file(file: TextIOWrapper, text: str):
   file.seek(0)
