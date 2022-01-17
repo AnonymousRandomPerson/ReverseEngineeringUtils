@@ -4,10 +4,11 @@ from textUtils import *
 from transformAsm import get_asm_unified, transform_asm
 import os
 
-function_location = 'code_8075BA4'
-function_name = 'IsTargetStraightAhead'
-function_header = 'bool8 %s(struct DungeonEntity *pokemon, struct DungeonEntity *targetPokemon, s32 facingDir, s32 maxRange)' % function_name
-new_location = 'dungeon_ai_attack'
+function_location = 'code_8070D04'
+function_name = 'CanMoveForward2'
+function_header = 'bool8 %s(struct DungeonEntity pokemon, u8 facingDir)' % function_name
+new_location = 'dungeon_capabilities_1'
+# e.g., '80494EC'
 next_function_address = None
 
 def overwrite_file(file: TextIOWrapper, text: str):
@@ -19,6 +20,7 @@ new_location_header = os.path.join(PRET_FOLDER, 'include', new_location + '.h')
 existing_file = os.path.exists(new_location_header)
 
 old_asm_path = os.path.join(PRET_FOLDER, 'asm', function_location + '.s')
+remove_old_asm = False
 with open(old_asm_path, 'r+') as file:
   contents = file.read()
   function_index = index_before(contents, '\tthumb_func_start ' + function_name)
@@ -49,6 +51,8 @@ with open(old_asm_path, 'r+') as file:
     overwrite_file(file, contents)
   else:
     os.remove(old_asm_path)
+    if next_function_name is None:
+      remove_old_asm = True
 
 raw_asm_file = os.path.join('asm', 'raw.txt')
 with open(raw_asm_file, 'w') as file:
@@ -120,12 +124,15 @@ with open(ld_script, 'r+') as file:
   contents = file.read()
   new_asm_file = 'asm/%s.o(.text);\n' % new_asm_location
   anchor_file = 'asm/%s.o(.text);\n' % function_location
-  if existing_file:
-    if new_asm_location:
-      contents = contents.replace(anchor_file, new_asm_file)
+  if remove_old_asm:
+    contents = contents.replace('        ' + anchor_file, '')
   else:
-    script_insert = ('        src/%s.o(.text);\n' % new_location)
-    if new_asm_location:
-      script_insert = script_insert + '        ' + new_asm_file
-    contents = insert_after(contents, anchor_file, script_insert)
+    if existing_file:
+      if new_asm_location:
+        contents = contents.replace(anchor_file, new_asm_file)
+    else:
+      script_insert = ('        src/%s.o(.text);\n' % new_location)
+      if new_asm_location:
+        script_insert = script_insert + '        ' + new_asm_file
+      contents = insert_after(contents, anchor_file, script_insert)
   overwrite_file(file, contents)

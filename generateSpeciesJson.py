@@ -75,7 +75,7 @@ with open(GAME_FILE_PATH, 'rb') as game_file:
       assign_nondefault(species_json['needs'], 'evolve_need2', evolve_need2)
 
     species_json['dexInternal'] = read_u16_array(game_file, 2)
-    species_json['base_recruit'] = read_u16(game_file)
+    species_json['base_recruit'] = read_s16(game_file)
     species_json['alphabetParent'] = read_u16_array(game_file, 2)
     read_u16(game_file)
 

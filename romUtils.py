@@ -2,7 +2,7 @@ from typing import Dict, List
 import binascii
 from filePaths import GAME_FILE_PATH
 
-def read_offset_data(init_offset: int, num_elements: int, data_size: int = 1, data_offset: int = 0, read_size: int = 1, index_dict: Dict[int, str] = None, include_unknown: bool = False, binary_values: bool = False, decimal_values: bool = False, mask: int = None):
+def read_offset_data(init_offset: int, num_elements: int, data_size: int = 1, data_offset: int = 0, read_size: int = 1, index_dict: Dict[int, str] = None, include_unknown: bool = False, binary_values: bool = False, decimal_values: bool = False, mask: int = None, sorted_values = True):
   field_map: Dict[int, List] = {}
 
   with open(GAME_FILE_PATH, 'rb') as game_file:
@@ -36,5 +36,11 @@ def read_offset_data(init_offset: int, num_elements: int, data_size: int = 1, da
 
       game_file.seek(data_size - read_size, 1)
 
-  for field in sorted(field_map.keys()):
-    print('%s: %s' % (field, list(sorted(field_map[field]))))
+  field_keys = field_map.keys()
+  if sorted_values:
+    field_keys = sorted(field_keys)
+  for field in field_keys:
+    field_values = field_map[field]
+    if sorted_values:
+      field_values = list(sorted(field_values))
+    print('%s: %s' % (field, field_values))

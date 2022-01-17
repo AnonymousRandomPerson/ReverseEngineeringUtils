@@ -7,7 +7,7 @@ def transform_asm():
   with open(raw_file, 'r') as file:
     raw_asm = file.read()
 
-  replaced_asm = raw_asm.replace(',l', ', l').replace(',r', ', r').replace('.4byte', '.word').replace('r10', 'sl')
+  replaced_asm = raw_asm.replace(',l', ', l').replace(',r', ', r').replace('.4byte', '.word').replace('r10', 'sl').replace('r12', 'ip')
   transformed_asm = ''
   for line in replaced_asm.split('\n')[2:-2]:
     if '.align' not in line:
