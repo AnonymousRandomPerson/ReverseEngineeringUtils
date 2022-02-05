@@ -1,4 +1,23 @@
-#include "global.h"
+#include <stdint.h>
+
+#define TRUE  1
+#define FALSE 0
+
+typedef uint8_t   u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
+typedef int8_t    s8;
+typedef int16_t  s16;
+typedef int32_t  s32;
+typedef int64_t  s64;
+
+typedef float  f32;
+typedef double f64;
+
+typedef u8  bool8;
+typedef u16 bool16;
+typedef u32 bool32;
 
 #define MAX_MON_MOVES 4
 #define MAX_TEAM_MEMBERS 4
@@ -21,7 +40,7 @@ struct PokemonMove
     u8 moveFlags;
     bool8 sealed;
     u16 moveID;
-    u8 pp;
+    u8 PP;
     u8 powerBoost; // How much the move is boosted by Ginsengs.
 };
 
@@ -37,6 +56,15 @@ struct Position32
     s32 y;
 };
 
+enum CrossableTerrain
+{
+    CROSSABLE_TERRAIN_REGULAR = 0,
+    CROSSABLE_TERRAIN_LIQUID = 1,
+    CROSSABLE_TERRAIN_CREVICE = 2,
+    CROSSABLE_TERRAIN_WALL = 3,
+    NUM_CROSSABLE_TERRAIN
+};
+
 struct MapTile
 {
     // Uses the TileType bit flags.
@@ -47,11 +75,8 @@ struct MapTile
     u8 unk8;
     /* 0x9 */ u8 roomIndex;
     // Bitwise flags for whether Pokémon can move to an adjacent tile. Bits correspond to directions in direction.h.
-    // Different sets of flags are used for Pokémon that can cross special terrain.
-    /* 0xA */ u8 canMoveAdjacent;
-    /* 0xB */ u8 canMoveAdjacentLiquid;
-    /* 0xC */ u8 canMoveAdjacentCrevice;
-    /* 0xD */ u8 canMoveAdjacentWall;
+    // Different sets of flags are used for Pokémon that can cross special terrain, corresponding to Cthe rossableTerrain enum.
+    /* 0xA */ u8 canMoveAdjacent[NUM_CROSSABLE_TERRAIN];
     u8 fillE[0x10 - 0xE];
     /* 0x10 */ struct DungeonEntity *pokemon; // Pokémon on the tile.
     /* 0x14 */ struct DungeonEntity *mapObject; // Item or trap on the tile.

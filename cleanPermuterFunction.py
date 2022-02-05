@@ -36,8 +36,8 @@ function_start_index = code.rfind('\n', 0, function_index)
 code = code[function_start_index + 1:]
 
 code = code.replace('  ', '    ').replace('(void *) 0', 'NULL')
-code = re.sub('else\n +if', 'else if', code)
-code = re.sub('\n{2,}', '\n', code)
+code = re.sub(r'else\n +if', 'else if', code)
+code = re.sub(r'\n{2,}', '\n', code)
 
 for replace_string in replace_strings:
   code = code.replace(replace_string.find, replace_string.replace)

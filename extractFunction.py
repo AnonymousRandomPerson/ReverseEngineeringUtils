@@ -4,10 +4,10 @@ from textUtils import *
 from transformAsm import get_asm_unified, transform_asm
 import os
 
-function_location = 'code_8070D04'
-function_name = 'CanMoveForward2'
-function_header = 'bool8 %s(struct DungeonEntity pokemon, u8 facingDir)' % function_name
-new_location = 'dungeon_capabilities_1'
+function_location = 'code_80521D0'
+function_name = 'IsChargeMove'
+function_header = 'void %s(struct DungeonEntity *pokemon, struct PokemonMove *move)' % function_name
+new_location = 'charge_move'
 # e.g., '80494EC'
 next_function_address = None
 
