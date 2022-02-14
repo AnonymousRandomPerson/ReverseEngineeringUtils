@@ -33,6 +33,13 @@ def transform_asm():
     if not re.search(r'pop \{r[01]\}', line_decompme) and not re.search(r'bx r[01]', line_decompme):
       transformed_asm_decompme += line_decompme + '\n'
 
+  pop_index = transformed_asm_decompme.rfind('pop')
+  if pop_index >= 0:
+    last_pop_end = transformed_asm_decompme.find('}', transformed_asm_decompme.rfind('pop'))
+    transformed_asm_decompme = transformed_asm_decompme[:last_pop_end] + ', pc' + transformed_asm_decompme[last_pop_end:]
+  else:
+    transformed_asm_decompme += '  pop {pc}'
+
   transformed_file = os.path.join('asm', 'transformed.txt')
   with open(transformed_file, 'w') as file:
     file.write(transformed_asm)

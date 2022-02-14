@@ -4,12 +4,12 @@ from textUtils import *
 from transformAsm import get_asm_unified, transform_asm
 import os
 
-function_location = 'code_80521D0'
-function_name = 'IsChargeMove'
-function_header = 'void %s(struct DungeonEntity *pokemon, struct PokemonMove *move)' % function_name
-new_location = 'charge_move'
+function_location = 'code_8057824'
+function_name = 'CanUseOnSelfWithStatusChecker'
+function_header = 'bool8 %s(struct DungeonEntity *pokemon, struct PokemonMove *move)' % function_name
+new_location = 'status_checker'
 # e.g., '80494EC'
-next_function_address = None
+next_function_address = '805CEB8'
 
 def overwrite_file(file: TextIOWrapper, text: str):
   file.seek(0)

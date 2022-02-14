@@ -1,23 +1,19 @@
-#include <stdint.h>
-
-#define TRUE  1
-#define FALSE 0
-
-typedef uint8_t   u8;
+typedef signed char int8_t;
+typedef short int16_t;
+typedef int int32_t;
+typedef unsigned char uint8_t;
+typedef unsigned short uint16_t;
+typedef unsigned int uint32_t;
+typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
-typedef uint64_t u64;
-typedef int8_t    s8;
-typedef int16_t  s16;
-typedef int32_t  s32;
-typedef int64_t  s64;
-
-typedef float  f32;
-typedef double f64;
-
-typedef u8  bool8;
-typedef u16 bool16;
-typedef u32 bool32;
+typedef int8_t s8;
+typedef int16_t s16;
+typedef int32_t s32;
+typedef u8 bool8;
+#define TRUE 1
+#define FALSE 0
+#define NULL ((void *)0)
 
 #define MAX_MON_MOVES 4
 #define MAX_TEAM_MEMBERS 4
@@ -86,9 +82,12 @@ struct MapRoom
 {
     u8 fill0[0x2 - 0x0];
     // All coordinates are inclusive.
-    /* 0x2 */ struct Position start;
-    /* 0x6 */ struct Position end;
-    u8 fillA[0x1C - 0xA];
+    // These are not aligned properly to use the Position struct.
+    /* 0x2 */ s16 startX;
+    /* 0x4 */ s16 startY;
+    /* 0x6 */ s16 endX;
+    /* 0x8 */ s16 endY;
+    u8 fillA[0x1A - 0xA];
 };
 
 extern struct DungeonGlobalData *gDungeonGlobalData;
@@ -182,7 +181,7 @@ struct DungeonGlobalData
 struct DungeonActionContainer
 {
     /* 0x0 */ u16 action;
-    /* 0x2 */ s8 facingDir;
+    /* 0x2 */ u8 facingDir;
     u8 fill3;
     // Additional parameter alongside actionIndex. Used for things like indicating which move a Pokémon should use from its moveset.
     /* 0x4 */ u8 actionUseIndex;
