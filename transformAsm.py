@@ -29,7 +29,9 @@ def transform_asm():
           line = line[:number_start] + '#' + number.lower()
     transformed_asm += line + '\n'
 
-    line_decompme = re.sub(r'^(\t\w+)s ', r'\1 ', line)
+    line_decompme = line
+    if 'bls' not in line and 'bcs' not in line:
+      line_decompme = re.sub(r'^(\t\w+)s ', r'\1 ', line)
     if not re.search(r'pop \{r[01]\}', line_decompme) and not re.search(r'bx r[01]', line_decompme):
       transformed_asm_decompme += line_decompme + '\n'
 
