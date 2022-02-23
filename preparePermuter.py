@@ -4,17 +4,30 @@ from filePaths import PERMUTER_FOLDER
 from permuterUtils import *
 
 function_file = os.path.join('asm', 'permuter_function.c')
+header_file = 'decomp_header.h'
 new_function = ''
+add_header = False
+
+lines = []
+
+if add_header:
+  with open(header_file, 'r') as file:
+    for line in file.readlines():
+      lines.append(line)
+
 with open(function_file, 'r') as file:
   for line in file.readlines():
-    mid_comment = line.find('/*')
-    if mid_comment > -1:
-      line = line[:mid_comment] + line[line.find('*/') + 3:]
+    lines.append(line)
 
-    comment_index = line.find('//')
-    if comment_index > -1:
-      line = line[:comment_index] + '\n'
-    new_function += line
+for line in lines:
+  mid_comment = line.find('/*')
+  if mid_comment > -1:
+    line = line[:mid_comment] + line[line.find('*/') + 3:]
+
+  comment_index = line.find('//')
+  if comment_index > -1:
+    line = line[:comment_index] + '\n'
+  new_function += line
 
 transformed_asm_file = os.path.join('asm', 'transformed.txt')
 

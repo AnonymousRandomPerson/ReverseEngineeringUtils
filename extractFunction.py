@@ -4,18 +4,21 @@ from textUtils import *
 from transformAsm import get_asm_unified, transform_asm
 import os
 
-function_location = 'code_8057824'
-function_name = 'CanUseOnSelfWithStatusChecker'
-function_header = 'bool8 %s(struct DungeonEntity *pokemon, struct PokemonMove *move)' % function_name
-new_location = 'status_checker'
-# e.g., '80494EC'
-next_function_address = '805CEB8'
+function_location = 'code_807C4A0'
+function_name = 'WeightMoveIfUsable'
+function_address = '7C580'
+function_header = 's32 %s(s32 numPotentialTargets, s32 targetingFlags, struct DungeonEntity *user, struct DungeonEntity *target, struct PokemonMove *move, bool8 hasStatusChecker)' % function_name
+new_location = 'dungeon_ai_attack_1'
+# e.g., '494EC'
+next_function_address = '7C648'
 
 def overwrite_file(file: TextIOWrapper, text: str):
   file.seek(0)
   file.write(text)
   file.truncate()
 
+if next_function_address:
+  next_function_address = '80' + next_function_address
 new_location_header = os.path.join(PRET_FOLDER, 'include', new_location + '.h')
 existing_file = os.path.exists(new_location_header)
 
@@ -75,9 +78,9 @@ if new_asm_location:
 if existing_file:
   with open(new_location_header, 'r+') as file:
     contents = file.read()
-    function_header_insert ="""// 0x
+    function_header_insert ="""// 0x%s
 %s;
-""" % function_header
+""" % (function_address, function_header)
     if new_asm_location:
       search_before = '\n#endif'
     else:
@@ -91,11 +94,11 @@ else:
     source = """#ifndef GUARD_%s_H
 #define GUARD_%s_H
 
-// 0x
+// 0x%s
 %s;
 
 #endif
-""" % (caps_new_location, caps_new_location, function_header)
+""" % (caps_new_location, caps_new_location, function_address, function_header)
     file.write(source)
 
 new_location_source = os.path.join(PRET_FOLDER, 'src', new_location + '.c')

@@ -40,7 +40,19 @@ def transform_asm():
     last_pop_end = transformed_asm_decompme.find('}', transformed_asm_decompme.rfind('pop'))
     transformed_asm_decompme = transformed_asm_decompme[:last_pop_end] + ', pc' + transformed_asm_decompme[last_pop_end:]
   else:
-    transformed_asm_decompme += '  pop {pc}'
+    has_word_end = False
+    has_word = True
+    line_start = len(transformed_asm_decompme)
+    while (has_word):
+      prev_line_start = line_start
+      line_start = transformed_asm_decompme.rfind('\n', 0, line_start - 1)
+      has_word = '.word' in transformed_asm_decompme[line_start:prev_line_start]
+      if has_word:
+        has_word_end = True
+    pop_instruction = '  pop {pc}'
+    if has_word_end:
+      pop_instruction = '\n' + pop_instruction
+    transformed_asm_decompme = transformed_asm_decompme[:prev_line_start] + pop_instruction + transformed_asm_decompme[prev_line_start:]
 
   transformed_file = os.path.join('asm', 'transformed.txt')
   with open(transformed_file, 'w') as file:
