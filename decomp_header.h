@@ -36,7 +36,7 @@ struct ItemSlot
 struct PokemonMove
 {
     u8 moveFlags;
-    bool8 sealed;
+    u8 moveFlags2;
     u16 moveID;
     u8 PP;
     u8 powerBoost; // How much the move is boosted by Ginsengs.
@@ -221,20 +221,20 @@ struct DungeonEntityData
     /* 0x18 */ u32 expPoints;
     // Temporary stat boosts/drops from effects like Growl or Swords Dance.
     // These start at 10 and are in the range [1, 19].
-    /* 0x1C */ s16 attackStage;
-    /* 0x1E */ s16 specialAttackStage;
-    /* 0x20 */ s16 defenseStage;
-    /* 0x22 */ s16 specialDefenseStage;
-    /* 0x24 */ s16 accuracyStage;
-    /* 0x26 */ s16 evasionStage;
+    // Index 0 is Attack. Index 1 is Special Attack.
+    /* 0x1C */ s16 attackStages[2];
+    // Index 0 is Defense. Index 1 is Special Defense.
+    /* 0x20 */ s16 defenseStages[2];
+    // Index 0 is accuracy. Index 1 is evasion.
+    /* 0x24 */ s16 accuracyStages[2];
     // // When a Fire-type move is used on a Pokémon with Flash Fire, this value increases the power of the Pokémon's Fire-type moves.
     /* 0x28 */ s16 flashFireBoost;
     u8 fill2A[0x2C - 0x2A];
     // These start at 0x1000, and are halved by certain moves like Screech to lower the corresponding stat.
-    /* 0x2C */ s32 attackMultiplier;
-    /* 0x30 */ s32 specialAttackMultiplier;
-    /* 0x34 */ s32 defenseMultiplier;
-    /* 0x38 */ s32 specialDefenseMultiplier;
+    // Index 0 is Attack. Index 1 is Special Attack.
+    /* 0x2C */ s32 attackMultipliers[2];
+    // Index 0 is Defense. Index 1 is Special Defense.
+    /* 0x34 */ s32 defenseMultipliers[2];
     u8 fill3C[0x3E - 0x3C];
     /* 0x3E */ u8 hiddenPowerType;
     u8 fill3F;
@@ -244,10 +244,8 @@ struct DungeonEntityData
     u8 fill55[0x58 - 0x55];
     // Position of the target that the Pokémon wants throw an item at.
     /* 0x58 */ struct Position itemTargetPosition;
-    /* 0x5C */ u8 type1;
-    /* 0x5D */ u8 type2;
-    /* 0x5E */ u8 ability1;
-    /* 0x5F */ u8 ability2;
+    /* 0x5C */ u8 types[2];
+    /* 0x5E */ u8 abilities[2];
     /* 0x60 */ struct ItemSlot heldItem;
     u8 fill64[0x68 - 0x64];
     /* 0x68 */ struct Position previousPosition1;
