@@ -1,8 +1,8 @@
 from typing import Dict
 
-species_map: Dict[int, str] = {}
+monster_map: Dict[int, str] = {}
 index = 0
-species_list = [
+monster_list = [
   'None',
   'Bulbasaur',
   'Ivysaur',
@@ -429,6 +429,6 @@ species_list = [
   'Rayquaza-Cutscene'
 ]
 
-for species in species_list:
-  species_map[index] = species
+for species in monster_list:
+  monster_map[index] = species
   index += 1

@@ -2,10 +2,10 @@ from typing import Dict, List
 import binascii
 from filePaths import GAME_FILE_PATH
 
-def read_offset_data(init_offset: int, num_elements: int, data_size: int = 1, data_offset: int = 0, read_size: int = 1, index_dict: Dict[int, str] = None, include_unknown: bool = False, binary_values: bool = False, decimal_values: bool = False, mask: int = None, sorted_values = True):
+def read_offset_data(init_offset: int, num_elements: int, data_size: int = 1, data_offset: int = 0, read_size: int = 1, index_dict: Dict[int, str] = None, include_unknown: bool = False, binary_values: bool = False, decimal_values: bool = False, mask: int = None, sorted_values = True, file_path = GAME_FILE_PATH, print_results = True):
   field_map: Dict[int, List] = {}
 
-  with open(GAME_FILE_PATH, 'rb') as game_file:
+  with open(file_path, 'rb') as game_file:
     game_file.seek(init_offset + data_offset)
 
     for index in range(num_elements + 1):
@@ -43,4 +43,7 @@ def read_offset_data(init_offset: int, num_elements: int, data_size: int = 1, da
     field_values = field_map[field]
     if sorted_values:
       field_values = list(sorted(field_values))
-    print('%s: %s' % (field, field_values))
+      field_map[field] = field_values
+    if print_results:
+      print('%s: %s' % (field, field_values))
+  return field_map

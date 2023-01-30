@@ -1,14 +1,15 @@
+import os
 from io import TextIOWrapper
+
 from filePaths import PRET_FOLDER
 from textUtils import *
 from transformAsm import get_asm_unified, transform_asm
-import os
 
-function_location = 'code_8057144'
-function_name = 'IsMoveUsable_1'
-function_header = 'bool8 %s(struct DungeonEntity *pokemon, s32 moveIndex, bool8 hasPPChecker)' % function_name
-new_location = 'move_util'
-next_function_address = '573CC'
+function_location = 'code_807B2D8'
+function_name = 'DecideMovement'
+function_header = 'struct void %s(struct DungeonEntity *pokemon, bool8 showRunAwayEffect)' % function_name
+new_location = 'dungeon_ai_movement'
+next_function_address = None
 
 def overwrite_file(file: TextIOWrapper, text: str):
   file.seek(0)

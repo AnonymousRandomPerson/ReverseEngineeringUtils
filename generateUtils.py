@@ -4,7 +4,7 @@ from io import BufferedReader
 from typing import Dict, List, Set
 from data.itemData import item_map
 from data.moveData import move_map
-from data.speciesData import species_list
+from data.monsterData import monster_list
 
 @dataclass
 class JsonStringField:
@@ -90,8 +90,8 @@ def strip_name(name: str, use_underscores=True) -> str:
     space = ''
   return name.replace(' ', space).replace('-', space).replace('♀', '_F').replace('♂', '_M').replace('.', '').replace('!', 'EMark').replace('?', 'QMark').replace("'", '').replace('\u00e9', 'e')
 
-def get_species_macro(index: int) -> str:
-  return 'SPECIES_' + strip_name(species_list[index].upper())
+def get_monster_macro(index: int) -> str:
+  return 'MONSTER_' + strip_name(monster_list[index].upper())
 
 def get_move_macro(index: int) -> str:
   if index == 0:
@@ -99,7 +99,7 @@ def get_move_macro(index: int) -> str:
   return 'MOVE_' + strip_name(move_map[index]).upper()
 
 def get_item_macro(index: int) -> str:
-  return 'ITEM_ID_' + strip_name(item_map[index]).upper()
+  return 'ITEM_' + strip_name(item_map[index]).upper()
 
 def assign_nondefault(json_data: Dict, key: str, value):
   if isinstance(value, list):

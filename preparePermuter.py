@@ -6,7 +6,7 @@ from permuterUtils import *
 function_file = os.path.join('asm', 'permuter_function.c')
 header_file = 'decomp_header.h'
 new_function = ''
-add_header = False
+add_header = True
 
 lines = []
 
