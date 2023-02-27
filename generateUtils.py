@@ -41,6 +41,12 @@ def read_bool8(game_file: BufferedReader) -> int:
 def read_u8(game_file: BufferedReader) -> int:
   return read_int(game_file, 1)
 
+def read_s8(game_file: BufferedReader) -> int:
+  value = read_int(game_file, 1)
+  if value > 127:
+    value -= 256
+  return value
+
 def read_u16(game_file: BufferedReader) -> int:
   return read_int(game_file, 2)
 

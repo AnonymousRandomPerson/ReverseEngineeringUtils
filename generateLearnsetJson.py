@@ -20,6 +20,7 @@ with open(GAME_FILE_PATH, 'rb') as game_file:
       'levelUpMoves': [],
       'HMTMMoves': []
     }
+    print(learnset_json['pokemon'])
     
     while move_id := read_u8(game_file):
       level_up_json = {}
