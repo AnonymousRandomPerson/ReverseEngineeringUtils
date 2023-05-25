@@ -1,8 +1,8 @@
 import os, re
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Dict, List, Any
 
-start_address = 0x83B0000
+start_address = 0x84cb834
 current_address = start_address
 
 with open(os.path.join('pointer', 'raw.txt'), 'r') as raw_file:
@@ -15,6 +15,7 @@ class BinLine:
   new_line: str
   prefix_lines: List[str]
   changed: bool
+  group: Any
 
 @dataclass
 class BinLineGroup:
@@ -34,9 +35,10 @@ def add_bin_line(line):
   global bin_lines, bin_line_memory_map, current_bin_line_group
   if line[-1] != '\n':
     line += '\n'
-  bin_line = BinLine(current_address, line, line, [], False)
+  bin_line = BinLine(current_address, line, line, [], False, current_bin_line_group)
   bin_lines.append(bin_line)
-  bin_line_memory_map[current_address] = bin_line
+  for i in range(0, 4):
+    bin_line_memory_map[current_address + i] = bin_line
   current_bin_line_group.bin_lines.append(bin_line)
 
 current_sections = []
@@ -103,6 +105,23 @@ for line in bin_lines:
 for line in replace_lines:
   if line.address in bin_line_memory_map:
     pointer_line = bin_line_memory_map[line.address]
+    if line.address != pointer_line.address:
+      comma_split = pointer_line.new_line[6:-1].split(', ')
+      insert_index_whole = bin_lines.index(pointer_line)
+      insert_index_group = pointer_line.group.bin_lines.index(pointer_line)
+      old_address = pointer_line.address
+      del bin_lines[insert_index_whole]
+      del pointer_line.group.bin_lines[insert_index_group]
+      for i, byte in enumerate(comma_split):
+        byte_line = f'.byte {byte}\n'
+        new_address = old_address + i
+        new_line = BinLine(new_address, byte_line, byte_line, [], False, pointer_line.group)
+        if new_address == line.address:
+          pointer_line = new_line
+        bin_lines.insert(insert_index_whole + i, new_line)
+        pointer_line.group.bin_lines.insert(insert_index_group + i, new_line)
+        bin_line_memory_map[new_address] = new_line
+    
     pointer_line.changed = True
     prefix_lines = pointer_line.prefix_lines
     if len(prefix_lines) == 0:
