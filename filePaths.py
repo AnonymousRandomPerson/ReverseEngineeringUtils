@@ -6,3 +6,4 @@ WAZA_FILE_PATH = os.path.join('..', 'Games', 'Pokemon Mystery Dungeon Explorers 
 RE_FOLDER = os.path.join(os.sep, 'Users', 'chenghanngan', 'Documents', 'Programs', 'Reverse Engineering')
 PRET_FOLDER = os.path.join(RE_FOLDER, 'PRET', 'pmd-red')
 PERMUTER_FOLDER = os.path.join(RE_FOLDER, 'PRET', 'decomp-permuter-arm')
+NDS_TOOL_FOLDER = os.path.join(RE_FOLDER, 'Support', 'ndstool-2.1.2')
