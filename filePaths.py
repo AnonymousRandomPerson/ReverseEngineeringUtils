@@ -7,3 +7,5 @@ RE_FOLDER = os.path.join(os.sep, 'Users', 'chenghanngan', 'Documents', 'Programs
 PRET_FOLDER = os.path.join(RE_FOLDER, 'PRET', 'pmd-red')
 PERMUTER_FOLDER = os.path.join(RE_FOLDER, 'PRET', 'decomp-permuter-arm')
 NDS_TOOL_FOLDER = os.path.join(RE_FOLDER, 'Support', 'ndstool-2.1.2')
+WHITE_2_FOLDER = os.path.join(NDS_TOOL_FOLDER, 'Pokemon White 2')
+SKY_FOLDER = os.path.join(NDS_TOOL_FOLDER, 'Pokemon Mystery Dungeon Explorers of Sky')
