@@ -1,6 +1,6 @@
 import os
 
-start_address = 0x1740000
+start_address = 0x380000
 current_address = start_address
 
 with open(os.path.join('pointer', 'raw.txt'), 'r') as raw_file:

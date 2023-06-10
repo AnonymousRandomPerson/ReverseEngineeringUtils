@@ -2,8 +2,8 @@ import os
 
 from filePaths import GAME_FILE_PATH
 
-offset = 0x510000
-read_size = 0x1230000
+offset = 0x380000
+read_size = 0x22E74
 
 new_lines = []
 with open(GAME_FILE_PATH, 'rb') as game_file:
@@ -20,8 +20,6 @@ with open(GAME_FILE_PATH, 'rb') as game_file:
     field_value = format(field_value, '0%sx' % 2)
     line += f'0x{field_value}, '
   new_lines.append(line[:-2] + '\n')
-
-
 
 with open(os.path.join('pointer', 'transformed.txt'), 'w') as transformed_file:
   transformed_file.writelines(new_lines)
