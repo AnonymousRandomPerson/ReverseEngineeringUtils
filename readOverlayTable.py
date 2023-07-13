@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import List
 
 game_folder = 'Pokemon Mystery Dungeon Explorers of Sky'
-game_folder = 'Pokemon White 2'
+#game_folder = 'Pokemon White 2'
 overlay_file_path = os.path.join(NDS_TOOL_FOLDER, game_folder, 'y9.bin')
 OVERLAY_LENGTH = 32
 
@@ -27,4 +27,4 @@ for i in range(len(overlay_data) // OVERLAY_LENGTH):
   overlays.append(Overlay(read_long(start), read_long(start + 4), read_long(start + 8)))
 
 for overlay in overlays:
-  print(f'Overlay {overlay.id} ({hex(overlay.id)}), address {hex(overlay.address)}, size {overlay.size} ({hex(overlay.size)})')
+  print(f'Overlay {overlay.id} ({hex(overlay.id)}), start address {hex(overlay.address)}, end address {hex(overlay.address + overlay.size)}, size {overlay.size} ({hex(overlay.size)})')

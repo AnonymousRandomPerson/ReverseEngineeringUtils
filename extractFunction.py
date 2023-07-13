@@ -1,7 +1,7 @@
 import os
 from io import TextIOWrapper
 
-from filePaths import PRET_FOLDER
+from filePaths import PRET_PMDRED_FOLDER
 from textUtils import *
 from transformAsm import get_asm_unified, transform_asm
 
@@ -18,10 +18,10 @@ def overwrite_file(file: TextIOWrapper, text: str):
 
 if next_function_address:
   next_function_address = '80' + next_function_address
-new_location_header = os.path.join(PRET_FOLDER, 'include', new_location + '.h')
+new_location_header = os.path.join(PRET_PMDRED_FOLDER, 'include', new_location + '.h')
 existing_file = os.path.exists(new_location_header)
 
-old_asm_path = os.path.join(PRET_FOLDER, 'asm', function_location + '.s')
+old_asm_path = os.path.join(PRET_PMDRED_FOLDER, 'asm', function_location + '.s')
 remove_old_asm = False
 with open(old_asm_path, 'r+') as file:
   contents = file.read()
@@ -63,7 +63,7 @@ with open(raw_asm_file, 'w') as file:
 transform_asm()
 
 if new_asm_location:
-  new_asm_path = os.path.join(PRET_FOLDER, 'asm', new_asm_location + '.s')
+  new_asm_path = os.path.join(PRET_PMDRED_FOLDER, 'asm', new_asm_location + '.s')
   with open(new_asm_path, 'w') as file:
     header = """\t#include "asm/constants/gba_constants.inc"
   \t#include "asm/macros.inc"
@@ -94,7 +94,7 @@ else:
 """ % (caps_new_location, caps_new_location, function_header)
     file.write(source)
 
-new_location_source = os.path.join(PRET_FOLDER, 'src', new_location + '.c')
+new_location_source = os.path.join(PRET_PMDRED_FOLDER, 'src', new_location + '.c')
 asm_unified = get_asm_unified(function_text)
 asm_unified = """NAKED
 %s
@@ -115,7 +115,7 @@ else:
 """ % (new_location, asm_unified)
     file.write(source)
 
-ld_script = os.path.join(PRET_FOLDER, 'ld_script.txt')
+ld_script = os.path.join(PRET_PMDRED_FOLDER, 'ld_script.txt')
 with open(ld_script, 'r+') as file:
   contents = file.read()
   new_asm_file = 'asm/%s.o(.text);\n' % new_asm_location

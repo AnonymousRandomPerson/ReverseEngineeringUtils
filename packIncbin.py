@@ -1,9 +1,9 @@
 import os
 
-start_address = 0x380000
+start_address = 0xF891C
 current_address = start_address
 
-with open(os.path.join('pointer', 'raw.txt'), 'r') as raw_file:
+with open(os.path.join('pointer', 'raw_reference.txt'), 'r') as raw_file:
   raw_text = raw_file.readlines()
 
 def upper_hex(address):
@@ -42,5 +42,5 @@ for line in raw_text:
 if current_incbin_start is not None:
   new_text.append(f'.incbin "baserom.gba", {upper_hex(current_incbin_start)}, {upper_hex(current_address - current_incbin_start)}\n')
 
-with open(os.path.join('pointer', 'transformed.txt'), 'w') as transformed_file:
+with open(os.path.join('pointer', 'transformed_reference.txt'), 'w') as transformed_file:
   transformed_file.writelines(new_text)

@@ -1,0 +1,25 @@
+functions = [
+  'FUN_0207A220',
+  'FUN_0207A30C',
+  'FUN_0207A524',
+  'FUN_0207A538',
+  'FUN_0207A524',
+  'FUN_0207A538',
+  'FUN_0207A524',
+  'FUN_0207A538',
+  'FUN_0207A98C',
+  'FUN_0207A524',
+  'FUN_0207A538',
+  'FUN_0207AA34',
+  'FUN_0207A95C',
+  'FUN_02002228',
+  'FUN_020028AC',
+  'FUN_0200294C',
+  'FUN_02002A98',
+  'FUN_02002C2C',
+  'FUN_020082F4',
+  'FUN_02003ECC',
+]
+
+for function in set(functions):
+  print('.public ' + function)
