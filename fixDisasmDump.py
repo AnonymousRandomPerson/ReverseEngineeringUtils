@@ -33,7 +33,7 @@ def convert_search_mnemonic(search):
 arm_start_replacements = [
   ('ldm', 'ldmia'),
   ('push', 'stmdb sp!,'),
-  ('pop', 'ldmdb sp!,'),
+  ('pop', 'ldmia sp!,'),
   ('stm', 'stmia'),
 ]
 
@@ -49,6 +49,7 @@ thumb_start_replacements = [
   ('lsrs', 'lsr'),
   ('mvns', 'mvn'),
   ('orrs', 'orr'),
+  ('rors', 'ror'),
   ('stm', 'stmia'),
   ('subs', 'sub'),
 ]
@@ -64,7 +65,7 @@ for condition_code in condition_codes:
   arm_start_replacements.append((f'ldrh{condition_code}', f'ldr{condition_code}h'))
   arm_start_replacements.append((f'ldrsb{condition_code}', f'ldr{condition_code}sb'))
   arm_start_replacements.append((f'ldrsh{condition_code}', f'ldr{condition_code}sh'))
-  arm_start_replacements.append((f'pop{condition_code}', f'ldm{condition_code}db sp!,'))
+  arm_start_replacements.append((f'pop{condition_code}', f'ldm{condition_code}ia sp!,'))
   arm_start_replacements.append((f'stm{condition_code}', f'stm{condition_code}ia'))
   arm_start_replacements.append((f'strb{condition_code}', f'str{condition_code}b'))
   arm_start_replacements.append((f'strh{condition_code}', f'str{condition_code}h'))
@@ -80,7 +81,7 @@ arm_start_replacements.append(('\tsvc #', '\tswi '))
 
 shift_replacements = ['lsr', 'lsl', 'asr', 'ror']
 
-overlay_files = ['main']
+overlay_files = ['07']
 for overlay_file in overlay_files:
   missing_functions = set()
   if overlay_file == 'main' or overlay_file == 'itcm':
