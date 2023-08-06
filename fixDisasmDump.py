@@ -81,7 +81,7 @@ arm_start_replacements.append(('\tsvc #', '\tswi '))
 
 shift_replacements = ['lsr', 'lsl', 'asr', 'ror']
 
-overlay_files = ['07']
+overlay_files = ['34']
 for overlay_file in overlay_files:
   missing_functions = set()
   if overlay_file == 'main' or overlay_file == 'itcm':

@@ -2,11 +2,13 @@ from filePaths import *
 import os
 
 disasm_output_path = os.path.join(PRET_FOLDER, 'ndsdisasm', 'output')
+disasm_configs_path = os.path.join(PRET_FOLDER, 'ndsdisasm', 'config')
 decomp_asm_path = os.path.join(PRET_PMDSKY_FOLDER, 'asm')
 
-overlay = '08'
+overlay = '34'
 overlay_path = os.path.join(decomp_asm_path, f'overlay_{overlay}.s')
 disasm_overlay_path = os.path.join(disasm_output_path, f'pmdsky_{overlay}.s')
+disasm_config_path = os.path.join(disasm_configs_path, f'pmdsky_{overlay}.cfg')
 
 with open(overlay_path, 'r') as overlay_file:
   overlay_lines = overlay_file.readlines()
@@ -37,10 +39,16 @@ disasm_function_start_lines = {}
 with open(disasm_overlay_path) as disasm_overlay_file:
   disasm_overlay_lines = disasm_overlay_file.readlines()
 
+config_addresses = set()
+with open(disasm_config_path) as disasm_config_file:
+  for line in disasm_config_file.readlines():
+    config_addresses.add(line.split(' ')[1][2:].upper())
+
 for i, line in enumerate(disasm_overlay_lines):
   if line.startswith('\tarm_func_start'):
     offset = len('\tarm_func_start ')
-    disasm_function_start_lines[line[offset:-1]] = i
+    function_name = line[offset:-1].replace('FUN', f'ov{overlay}')
+    disasm_function_start_lines[function_name] = i
 
 new_lines = []
 new_lines_progress = 0
@@ -54,10 +62,12 @@ for start_hole, end_hole in holes:
       new_lines.extend(overlay_lines[new_lines_progress:start_hole - 1])
       new_lines.extend(disasm_overlay_lines[disasm_function_start_lines[start_hole_function_name] - 1 : disasm_function_start_lines[end_hole_function_name]])
       new_lines_progress = end_hole + 1
+    elif hole_address in config_addresses:
+      print(f'Failed to fill in function at address {hole_address}')
     else:
       print(f'arm_func 0x{hole_address} ov{overlay}_{hole_address}')
   else:
-    print('Unknown hole end:', start_hole, end_hole)
+    print(f'Unknown hole end at lines', start_hole, end_hole)
 
 new_lines.extend(overlay_lines[new_lines_progress:])
 
