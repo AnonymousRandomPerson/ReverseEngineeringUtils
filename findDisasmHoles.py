@@ -5,8 +5,13 @@ disasm_output_path = os.path.join(PRET_FOLDER, 'ndsdisasm', 'output')
 disasm_configs_path = os.path.join(PRET_FOLDER, 'ndsdisasm', 'config')
 decomp_asm_path = os.path.join(PRET_PMDSKY_FOLDER, 'asm')
 
-overlay = '34'
-overlay_path = os.path.join(decomp_asm_path, f'overlay_{overlay}.s')
+overlay = 'arm7'
+if overlay == 'arm7':
+  overaly_file_name = f'{overlay}.s'
+  decomp_asm_path = os.path.join(PRET_PMDSKY_FOLDER, 'sub', 'asm')
+else:
+  overaly_file_name = f'overlay_{overlay}.s'
+overlay_path = os.path.join(decomp_asm_path, overaly_file_name)
 disasm_overlay_path = os.path.join(disasm_output_path, f'pmdsky_{overlay}.s')
 disasm_config_path = os.path.join(disasm_configs_path, f'pmdsky_{overlay}.cfg')
 
@@ -44,10 +49,14 @@ with open(disasm_config_path) as disasm_config_file:
   for line in disasm_config_file.readlines():
     config_addresses.add(line.split(' ')[1][2:].upper())
 
+if overlay == 'arm7':
+  overlay_prefix = 'sub'
+else:
+  overlay_prefix = f'ov{overlay}'
 for i, line in enumerate(disasm_overlay_lines):
   if line.startswith('\tarm_func_start'):
     offset = len('\tarm_func_start ')
-    function_name = line[offset:-1].replace('FUN', f'ov{overlay}')
+    function_name = line[offset:-1].replace('FUN', overlay_prefix)
     disasm_function_start_lines[function_name] = i
 
 new_lines = []
@@ -56,7 +65,7 @@ for start_hole, end_hole in holes:
   hole_address = overlay_lines[start_hole - 1][1:-2]
   end_hole_line = overlay_lines[end_hole + 2]
   if ':' in end_hole_line:
-    start_hole_function_name = f'ov{overlay}_{hole_address}'
+    start_hole_function_name = f'{overlay_prefix}_{hole_address}'
     end_hole_function_name = end_hole_line[:end_hole_line.find(':')]
     if start_hole_function_name in disasm_function_start_lines and end_hole_function_name in disasm_function_start_lines:
       new_lines.extend(overlay_lines[new_lines_progress:start_hole - 1])
@@ -65,7 +74,7 @@ for start_hole, end_hole in holes:
     elif hole_address in config_addresses:
       print(f'Failed to fill in function at address {hole_address}')
     else:
-      print(f'arm_func 0x{hole_address} ov{overlay}_{hole_address}')
+      print(f'arm_func 0x{hole_address} {overlay_prefix}_{hole_address}')
   else:
     print(f'Unknown hole end at lines', start_hole, end_hole)
 

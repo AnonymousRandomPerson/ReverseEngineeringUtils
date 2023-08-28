@@ -81,16 +81,20 @@ arm_start_replacements.append(('\tsvc #', '\tswi '))
 
 shift_replacements = ['lsr', 'lsl', 'asr', 'ror']
 
-overlay_files = ['34']
+overlay_files = ['wram']
 for overlay_file in overlay_files:
   missing_functions = set()
-  if overlay_file == 'main' or overlay_file == 'itcm':
+  if overlay_file == 'main' or overlay_file == 'itcm' or overlay_file == 'wram':
     overlay_file += '.s'
   else:
     overlay_file = f'overlay_{overlay_file}.s'
 
-  overlay_path = os.path.join(decomp_asm_path, overlay_file)
+  if overlay_file == 'wram.s':
+    overlay_path = os.path.join(PRET_PMDSKY_FOLDER, 'sub', 'asm', overlay_file)
+  else:
+    overlay_path = os.path.join(decomp_asm_path, overlay_file)
   if not os.path.exists(overlay_path):
+    print(overlay_path, 'not found.')
     continue
   with open(overlay_path, 'r') as overlay_file:
     new_lines = []
