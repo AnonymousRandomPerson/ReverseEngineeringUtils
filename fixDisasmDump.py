@@ -81,16 +81,18 @@ arm_start_replacements.append(('\tsvc #', '\tswi '))
 
 shift_replacements = ['lsr', 'lsl', 'asr', 'ror']
 
-overlay_files = ['wram']
+overlay_files = ['06']
 for overlay_file in overlay_files:
   missing_functions = set()
-  if overlay_file == 'main' or overlay_file == 'itcm' or overlay_file == 'wram':
+  if overlay_file == 'main' or overlay_file == 'itcm' or overlay_file == 'wram' or overlay_file == 'arm7':
     overlay_file += '.s'
   else:
     overlay_file = f'overlay_{overlay_file}.s'
 
   if overlay_file == 'wram.s':
     overlay_path = os.path.join(PRET_PMDSKY_FOLDER, 'sub', 'asm', overlay_file)
+  elif overlay_file == 'arm7.s':
+    overlay_path = os.path.join(PRET_PMDSKY_FOLDER, 'sub', 'asm', 'main.s')
   else:
     overlay_path = os.path.join(decomp_asm_path, overlay_file)
   if not os.path.exists(overlay_path):
@@ -152,7 +154,7 @@ for overlay_file in overlay_files:
             if '#' in line or line.count(',') == 1:
               line = line.replace('movs', 'mov', 1)
             found_instruction = True
-          
+
           elif line.startswith(convert_search_mnemonic('muls')):
             line = line.replace('muls', 'mul', 1)
             line = line[:line.rfind(',')] + '\n'
