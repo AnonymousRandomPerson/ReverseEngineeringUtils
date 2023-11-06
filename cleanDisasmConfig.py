@@ -1,7 +1,7 @@
 from filePaths import *
 import os
 
-disasm_config_path = os.path.join(PRET_FOLDER, 'ndsdisasm', 'config')
+disasm_config_path = os.path.join(NDSDISASM_FOLDER, 'config')
 
 config_file_names = ['arm9']
 for i in range(0, 35):
@@ -23,7 +23,6 @@ for config_file_name in config_file_names:
         if function_name_address != function_address:
           line = line.replace(function_name_address, function_address)
       new_lines.append(line)
-  
+
   with open(config_path, 'w') as config_file:
     config_file.writelines(new_lines)
-  

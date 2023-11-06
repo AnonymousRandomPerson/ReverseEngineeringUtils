@@ -38,23 +38,27 @@ start_address = 0x02389D94 # ov31
 start_address = 0x022DCFF4 # ov34
 start_address = 0x027F7184 # arm7
 start_address = 0x038074E0 # arm7 wram
-start_address = 0x022DCFF4 # ov34
 
-pointer_prefix = 'ov34'
+start_address = 0x02090C6C # main EU
+start_address = 0x02318758 # ov00 EU
+start_address = 0x02340340 # ov07 EU
+start_address = 0x022C4CE8 # ov10 EU
+
+start_address = 0x02318758 # ov00 EU
+
+pointer_prefix = ''
 
 current_address = start_address
 include_unaligned_pointers = False
 min_address = start_address
+end_address = None
 trailing_spaces = '\t'
 name_custom_functions = False
 
+min_address = 0x02000000
+end_address = 0x02400000
+
 custom_pointers = set([
-  0x022DCBF4,
-  0x022DCC94,
-  0x022DCCE0,
-  0x022DCDF4,
-  0x022DCE8C,
-  0x022DCED8,
 ])
 
 @dataclass
@@ -165,6 +169,8 @@ for line in raw_text:
 
 print('End address:', hex(current_address))
 print('Size:', hex(current_address - start_address))
+if end_address is None:
+  end_address = current_address
 
 function_prefix = pointer_prefix
 if function_prefix == '':
@@ -199,7 +205,7 @@ for line in bin_lines:
 
     address_alignment = address_int % 4
     if (include_unaligned_pointers or address_alignment <= 1) and address_int not in existing_labels:
-      in_data_range = address_int < current_address and address_int >= min_address
+      in_data_range = address_int < end_address and address_int >= min_address
       potential_data_pointer = in_data_range and address_alignment == 0
       if potential_data_pointer or address_int in custom_pointers:
         pointer_name = f'{pointer_prefix}_{address_int:08X}'

@@ -1,12 +1,15 @@
 from filePaths import *
 import os
 
-game_file_path = os.path.join(SKY_FOLDER, 'arm7.bin')
-file_start = 0x26974
+game_file_path = os.path.join(SKY_FOLDER, 'overlay', 'overlay_0000.bin')
+game_file_path = os.path.join(SKY_EU_FOLDER, 'overlay', 'overlay_0000.bin')
+file_start = 0x5b398
 offset = file_start
 
-data_size = 0x71B
+data_size = 0x54dc
 read_size = 1
+
+bytes_per_line = 16
 
 byte_prefix = '\t.byte'
 
@@ -18,7 +21,7 @@ with open(game_file_path, 'rb') as game_file:
     field_value = int.from_bytes(data, 'little')
     field_value = format(field_value, '0%sx' % 2).upper()
     if i > 0:
-      if i % 16 == 0:
+      if i % bytes_per_line == 0:
         full_data += f'\n{byte_prefix}'
       else:
         full_data += ','

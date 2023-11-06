@@ -2,7 +2,7 @@ from filePaths import *
 from textUtils import *
 import os
 
-disasm_config_path = os.path.join(PRET_FOLDER, 'ndsdisasm', 'config')
+disasm_config_path = os.path.join(NDSDISASM_FOLDER, 'config')
 decomp_asm_path = os.path.join(PRET_PMDSKY_FOLDER, 'asm')
 
 mapped_function_names = {}
@@ -81,10 +81,10 @@ arm_start_replacements.append(('\tsvc #', '\tswi '))
 
 shift_replacements = ['lsr', 'lsl', 'asr', 'ror']
 
-overlay_files = ['06']
+overlay_files = ['07']
 for overlay_file in overlay_files:
   missing_functions = set()
-  if overlay_file == 'main' or overlay_file == 'itcm' or overlay_file == 'wram' or overlay_file == 'arm7':
+  if 'main' in overlay_file or overlay_file == 'itcm' or overlay_file == 'wram' or overlay_file == 'arm7':
     overlay_file += '.s'
   else:
     overlay_file = f'overlay_{overlay_file}.s'

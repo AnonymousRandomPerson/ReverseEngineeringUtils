@@ -1,7 +1,7 @@
 from filePaths import *
 import os
 
-disasm_config_path = os.path.join(PRET_FOLDER, 'ndsdisasm', 'config')
+disasm_config_path = os.path.join(NDSDISASM_FOLDER, 'config')
 
 mapped_function_names = {}
 config_file_names = ['arm9', 'itcm']

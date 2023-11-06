@@ -1,17 +1,17 @@
 from filePaths import *
 import os
 
-disasm_output_path = os.path.join(PRET_FOLDER, 'ndsdisasm', 'output')
-disasm_configs_path = os.path.join(PRET_FOLDER, 'ndsdisasm', 'config')
+disasm_output_path = os.path.join(NDSDISASM_FOLDER, 'output')
+disasm_configs_path = os.path.join(NDSDISASM_FOLDER, 'config')
 decomp_asm_path = os.path.join(PRET_PMDSKY_FOLDER, 'asm')
 
 overlay = 'arm7'
 if overlay == 'arm7':
-  overaly_file_name = f'{overlay}.s'
+  overlay_file_name = f'{overlay}.s'
   decomp_asm_path = os.path.join(PRET_PMDSKY_FOLDER, 'sub', 'asm')
 else:
-  overaly_file_name = f'overlay_{overlay}.s'
-overlay_path = os.path.join(decomp_asm_path, overaly_file_name)
+  overlay_file_name = f'overlay_{overlay}.s'
+overlay_path = os.path.join(decomp_asm_path, overlay_file_name)
 disasm_overlay_path = os.path.join(disasm_output_path, f'pmdsky_{overlay}.s')
 disasm_config_path = os.path.join(disasm_configs_path, f'pmdsky_{overlay}.cfg')
 

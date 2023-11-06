@@ -1,7 +1,7 @@
 import os
 from typing import Set
 
-start_address = 0x1FF8000
+start_address = 0x2090C6C
 end_address = 0x02400000
 # start_address = 0x037F8000
 # end_address = 0x0380b488
@@ -18,14 +18,14 @@ prefix_addresses = [
   # (0x0233CA80, 'ov07'),
   # (0x0233CA80, 'ov08'),
   # (0x0233CA80, 'ov09'),
-  (0x022BCA80, 'ov10'),
-  (0x022DC240, 'ov11'),
+  # (0x022BCA80, 'ov10'),
+  # (0x022DC240, 'ov11'),
   # (0x0238A140, 'ov13'),
   # (0x0238A140, 'ov14'),
   # (0x0238A140, 'ov15'),
   # (0x0238A140, 'ov16'),
   # (0x0238A140, 'ov17'),
-  (0x0238A140, 'ov18'),
+  # (0x0238A140, 'ov18'),
   # (0x0238A140, 'ov19'),
   # (0x0238A140, 'ov20'),
   # (0x0238A140, 'ov21'),
