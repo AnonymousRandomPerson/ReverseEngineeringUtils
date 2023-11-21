@@ -2,18 +2,19 @@ from filePaths import *
 from typing import List
 import os
 
-file_name = 'pmdsky_00'
-start_label_us = None
-start_label_eu = None
-current_line_us = 572
-current_line_eu = 575
+overlay = '34'
+file_name = f'pmdsky_{overlay}'
+start_label_us = 'ov34_022DC958'
+start_label_eu = 'ov34_022DD210'
+current_line_us = None
+current_line_eu = None
 
-use_transformed = True
+use_transformed = False
 
 if use_transformed:
-  with open(os.path.join('bytes', 'ov00_us.s'), 'r') as file:
+  with open(os.path.join('bytes', f'ov{overlay}_us.s'), 'r') as file:
     lines_us = file.readlines()
-  with open(os.path.join('bytes', 'ov00_eu.s'), 'r') as file:
+  with open(os.path.join('bytes', f'ov{overlay}_eu.s'), 'r') as file:
     lines_eu = file.readlines()
 else:
   with open(os.path.join(NDSDISASM_FOLDER, 'output', f'{file_name}.s'), 'r') as file:

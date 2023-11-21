@@ -1,7 +1,7 @@
 import os
 from typing import Set
 
-start_address = 0x2090C6C
+start_address = 0x22BD3C0
 end_address = 0x02400000
 # start_address = 0x037F8000
 # end_address = 0x0380b488
@@ -40,7 +40,12 @@ prefix_addresses = [
   # (0x02382820, 'ov30'),
   # (0x02382820, 'ov31'),
   # (0x022DC240, 'ov34'),
+
+  (0x022BD3C0, 'ov00'),
+  (0x02329D40, 'ov02'),
 ]
+
+pointer_suffix = '_EU'
 
 with open(os.path.join('pointer', 'raw.txt'), 'r') as raw_file:
   raw_text = raw_file.readlines()
@@ -49,15 +54,16 @@ in_range_addresses: Set[int] = set()
 out_of_range_addresses: Set[int] = set()
 WORD_SEARCH = '.word 0x'
 for i, line in enumerate(raw_text):
-  if WORD_SEARCH in line and len(line) > len(WORD_SEARCH) + 8 or '=0x0' in line:
-    address = int(line[-9:-1], 16)
+  if WORD_SEARCH in line and len(line) > len(WORD_SEARCH) + 8 and '+' not in line or '=0x0' in line:
+    address_string = line[-9:-1]
+    address = int(address_string, 16)
     if address >= start_address and address <= end_address:
       replace_prefix = '_'
       for prefix_address in reversed(prefix_addresses):
         if address >= prefix_address[0]:
           replace_prefix = prefix_address[1] + replace_prefix
           break
-      raw_text[i] = line.replace('0x', replace_prefix)
+      raw_text[i] = line.replace(f'0x{address_string}', f'{replace_prefix}{address_string}{pointer_suffix}')
       in_range_addresses.add(address)
     else:
       out_of_range_addresses.add(address)

@@ -1,12 +1,13 @@
 from filePaths import *
 import os
 
-game_file_path = os.path.join(SKY_FOLDER, 'overlay', 'overlay_0000.bin')
-game_file_path = os.path.join(SKY_EU_FOLDER, 'overlay', 'overlay_0000.bin')
-file_start = 0x5b398
+overlay = '08'
+game_file_path = os.path.join(SKY_FOLDER, 'overlay', f'overlay_00{overlay}.bin')
+game_file_path = os.path.join(SKY_EU_FOLDER, 'overlay', f'overlay_00{overlay}.bin')
+file_start = 0x1E38
 offset = file_start
 
-data_size = 0x54dc
+data_size = 0x7E8
 read_size = 1
 
 bytes_per_line = 16
