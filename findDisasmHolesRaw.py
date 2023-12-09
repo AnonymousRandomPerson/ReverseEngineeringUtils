@@ -1,10 +1,10 @@
 from filePaths import *
 import os
 
-disasm_output_path = os.path.join(NDSDISASM_FOLDER, 'output', 'eu')
-disasm_configs_path = os.path.join(NDSDISASM_FOLDER, 'config', 'eu')
+disasm_output_path = os.path.join(NDSDISASM_FOLDER, 'output', 'jp')
+disasm_configs_path = os.path.join(NDSDISASM_FOLDER, 'config', 'jp')
 
-overlay = '34'
+overlay = 'arm9'
 if overlay.startswith('arm'):
   overlay_prefix = 'sub'
 else:

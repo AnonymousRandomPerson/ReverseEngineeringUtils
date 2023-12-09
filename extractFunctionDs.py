@@ -3,9 +3,9 @@ import os
 from filePaths import PRET_PMDSKY_FOLDER
 from typing import List
 
-function_location = 'overlay_29_0234EC38'
-function_name = 'ov29_0234FCA8'
-function_header = f'u8 {function_name}()'
+function_location = 'main_0200C4CC'
+function_name = 'FemaleToMaleForm'
+function_header = f's16 {function_name}(s16 monster_id)'
 
 ASM_FOLDER = os.path.join(PRET_PMDSKY_FOLDER, 'asm')
 INCLUDE_FOLDER = os.path.join(ASM_FOLDER, 'include')
@@ -41,7 +41,7 @@ for i, line in enumerate(original_lines):
     function_start_line = i
   elif line.startswith(f'\tarm_func_end {function_name}'):
     function_end_line = i
-  
+
   if function_start_line is not None and extract_function_address is None and ADDRESS_FIND in line:
     extract_function_address = get_line_address(line)
   if function_end_line is not None and ADDRESS_FIND in line:

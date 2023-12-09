@@ -4,10 +4,11 @@ import os
 overlay = '08'
 game_file_path = os.path.join(SKY_FOLDER, 'overlay', f'overlay_00{overlay}.bin')
 game_file_path = os.path.join(SKY_EU_FOLDER, 'overlay', f'overlay_00{overlay}.bin')
-file_start = 0x1E38
+game_file_path = os.path.join(SKY_JP_FOLDER, 'arm9.bin')
+file_start = 0x0
 offset = file_start
 
-data_size = 0x7E8
+data_size = 0x2B
 read_size = 1
 
 bytes_per_line = 16
