@@ -3,9 +3,9 @@ import os
 from filePaths import PRET_PMDSKY_FOLDER
 from typing import List
 
-function_location = 'main_0200C4CC'
-function_name = 'FemaleToMaleForm'
-function_header = f's16 {function_name}(s16 monster_id)'
+function_location = 'main_0207509C'
+function_name = 'SoundLFOBankSetConstEnvelopes'
+function_header = f'void {function_name}(struct dse_lfo_bank *lfo_bank, s8 level)'
 
 ASM_FOLDER = os.path.join(PRET_PMDSKY_FOLDER, 'asm')
 INCLUDE_FOLDER = os.path.join(ASM_FOLDER, 'include')

@@ -1,7 +1,7 @@
 import os
 from typing import Set
 
-start_address = 0x22BD3C0
+start_address = 0x02000000
 end_address = 0x02400000
 # start_address = 0x037F8000
 # end_address = 0x0380b488
@@ -40,12 +40,9 @@ prefix_addresses = [
   # (0x02382820, 'ov30'),
   # (0x02382820, 'ov31'),
   # (0x022DC240, 'ov34'),
-
-  (0x022BD3C0, 'ov00'),
-  (0x02329D40, 'ov02'),
 ]
 
-pointer_suffix = '_EU'
+pointer_suffix = '_JP'
 
 with open(os.path.join('pointer', 'raw.txt'), 'r') as raw_file:
   raw_text = raw_file.readlines()

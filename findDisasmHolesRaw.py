@@ -4,8 +4,8 @@ import os
 disasm_output_path = os.path.join(NDSDISASM_FOLDER, 'output', 'jp')
 disasm_configs_path = os.path.join(NDSDISASM_FOLDER, 'config', 'jp')
 
-overlay = 'arm9'
-if overlay.startswith('arm'):
+overlay = '10'
+if overlay.startswith('arm') or overlay == 'itcm':
   overlay_prefix = 'sub'
 else:
   overlay_prefix = f'ov{overlay}'

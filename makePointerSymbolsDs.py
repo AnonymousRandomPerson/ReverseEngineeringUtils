@@ -1,5 +1,5 @@
 import os, re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List, Any
 
 start_address = 0x02000BC4 # crt0
@@ -49,17 +49,30 @@ start_address = 0x022C4CE8 # ov10 EU
 start_address = 0x0231741C # ov11 EU
 start_address = 0x02350908 # ov29 EU
 
-start_address = 0x023503F4 # ov02 EU
+start_address = 0x02090BBC # main JP
+start_address = 0x0233C6F8 # ov01 JP
+start_address = 0x02347FC8 # ov03 JP
+start_address = 0x02317FA0 # ov11 JP
+
+start_address = 0x02090BBC # main JP
 
 REGION_US = 'US'
 REGION_EU = 'EU'
+REGION_JP = 'JP'
+REGION_MACROS = {
+  'US': REGION_US,
+  'EUROPE': REGION_EU,
+  'JAPAN': REGION_JP,
+}
 
-region = REGION_EU
+region = REGION_JP
 
 pointer_prefix = ''
 pointer_suffix = ''
 if region == REGION_EU:
   pointer_suffix = '_EU'
+elif region == REGION_JP:
+  pointer_suffix = '_JP'
 
 current_address = start_address
 include_unaligned_pointers = True
@@ -73,7 +86,22 @@ min_address = 0x02000000
 end_address = 0x02400000
 
 custom_pointers = set([
-  0x023503F4
+  0x0209A740,
+  0x0209B32C,
+  0x0209B408,
+  0x0209B488,
+  0x0209BDF8,
+  0x0209C29C,
+  0x0209C29D,
+  0x0209C29E,
+  0x020A45C8,
+  0x020B112C,
+  0x020B1234,
+  0x020B12A0,
+  0x022550FF,
+  0x022A92C0,
+  0x022A92C4,
+  0x022AA0FC,
 ])
 
 @dataclass
@@ -81,8 +109,14 @@ class TargetRange:
   start: int
   end: int
 
+
 target_pointer_ranges = [
 ]
+
+@dataclass
+class RegionContainer:
+  active_regions: List[str] = field(default_factory=list)
+  past_regions: List[str] = field(default_factory=list)
 
 print('Start address:', hex(start_address))
 
@@ -135,24 +169,48 @@ def add_current_part():
   current_sections = []
 
 SPACE_FIND = '.space '
-current_region = None
+
+current_regions: List[RegionContainer] = []
+def get_top_level_regions() -> List[str]:
+  if len(current_regions) <= 1:
+    return []
+  return current_regions[0].active_regions + current_regions[0].past_regions
 for line in raw_text:
   line_strip = line.lstrip()
   bin_size = 0
   current_bin_line_group = BinLineGroup(line, [])
   bin_line_groups.append(current_bin_line_group)
 
-  # if 'STRING_FILE_DIRECTORY_INIT' in line:
-  #   print(hex(current_address))
-
-  if line_strip.startswith('#ifdef EUROPE'):
-    current_region = REGION_EU
-  elif line_strip.startswith('#else') or line_strip.startswith('#ifndef EUROPE'):
-    current_region = REGION_US
+  if line_strip.startswith('#if'):
+    new_region = RegionContainer()
+    current_regions.append(new_region)
+    for region_name, region_key in REGION_MACROS.items():
+      if f'ifdef {region_name}' in line_strip or f' defined({region_name})' in line_strip:
+        new_region.active_regions.append(region_key)
+      elif f'ifndef {region_name}' in line_strip or f'!defined({region_name})' in line_strip:
+        new_region.active_regions.extend([region_key_2 for region_key_2 in REGION_MACROS.values() if region_key_2 != region_key and region_key_2 not in get_top_level_regions()])
+  elif line_strip.startswith('#elif') or line_strip.startswith('#else'):
+    current_region = current_regions[-1]
+    current_region.past_regions.extend(current_region.active_regions)
+    current_region.active_regions = []
+    if line_strip.startswith('#else'):
+      current_region.active_regions.extend([region_key for region_key in REGION_MACROS.values() if region_key not in current_region.past_regions and region_key not in get_top_level_regions()])
+    else:
+      for region_name, region_key in REGION_MACROS.items():
+        if f' defined({region_name})' in line_strip:
+          current_region.active_regions.append(region_key)
+        elif f'!defined({region_name})' in line_strip:
+          current_region.active_regions.extend([region_key_2 for region_key_2 in REGION_MACROS.values() if region_key_2 != region_key and region_key_2 not in current_region.past_regions and region_key_2 not in get_top_level_regions()])
   elif line_strip.startswith('#endif'):
-    current_region = None
+    current_regions.pop()
 
-  if current_region is None or current_region == region:
+  current_region = None
+  if len(current_regions) > 0:
+    current_region = current_regions[-1]
+
+  if current_region is None or region in current_region.active_regions:
+    if ':' in line_strip:
+      print(line_strip[:-1], hex(current_address))
     if line_strip.startswith('.byte'):
       comma_split = line_strip.split(',')
 
@@ -168,18 +226,18 @@ for line in raw_text:
     else:
       if line_strip.startswith('.string'):
         bin_size = len(line_strip.split('"')[1].replace('\\0', '0').replace('\\n', 'n')) + 1
-      elif line_strip.startswith('.hword'):
-        bin_size = 2
+      elif line_strip.startswith('.hword') or line_strip.startswith('.short'):
+        bin_size = 2 * (line_strip.count(',') + 1)
       elif line_strip.startswith('.word'):
-        bin_size = 4
+        bin_size = 4 * (line_strip.count(',') + 1)
       elif line_strip.startswith('.align 4'):
         address_align = current_address % 4
         if address_align > 0:
           bin_size = 4 - address_align
       elif line_strip.startswith('.bss') or line_strip.startswith('.data'):
-        # bin_size = current_address % 0x20
-        # if bin_size > 0 or line_strip.startswith('.data'):
-        #   bin_size = 0x20 - bin_size
+        bin_size = current_address % 0x20
+        if bin_size > 0 or line_strip.startswith('.data'):
+          bin_size = 0x20 - bin_size
         if line_strip.startswith('.bss'):
           bss_address = current_address + bin_size
       elif line_strip.startswith(SPACE_FIND):
@@ -282,6 +340,9 @@ for line in replace_lines:
   if line.address in bin_line_memory_map:
     pointer_line = bin_line_memory_map[line.address]
     if line.address != pointer_line.address:
+      if pointer_line.address == 0x0209C29C:
+        pass
+      old_pointer_line = pointer_line
       comma_split = pointer_line.new_line[6:-1].split(', ')
       insert_index_whole = bin_lines.index(pointer_line)
       insert_index_group = pointer_line.group.bin_lines.index(pointer_line)
@@ -294,12 +355,17 @@ for line in replace_lines:
         new_line = BinLine(new_address, byte_line, byte_line, [], False, pointer_line.group)
         if new_address == line.address:
           pointer_line = new_line
+        elif new_address == old_pointer_line.address:
+          new_line.prefix_lines = old_pointer_line.prefix_lines
+          new_line.changed = old_pointer_line.changed
         bin_lines.insert(insert_index_whole + i, new_line)
         pointer_line.group.bin_lines.insert(insert_index_group + i, new_line)
         bin_line_memory_map[new_address] = new_line
 
     pointer_line.changed = True
     prefix_lines = pointer_line.prefix_lines
+    if pointer_line.address == 0x0209C29C:
+      pass
     if len(prefix_lines) == 0:
       for prefix_line in line.prefix_lines:
         prefix_lines.append(prefix_line)
@@ -316,6 +382,8 @@ def combine_byte_string(current_byte_string: str):
 
 for group in bin_line_groups:
   changed = any([bin_line.changed for bin_line in group.bin_lines])
+  if len(group.bin_lines) and group.bin_lines[0].address == 0x0209C29C:
+    pass
   if changed:
     group_line_strip = group.raw_line.lstrip()
     if group_line_strip.startswith('.byte'):

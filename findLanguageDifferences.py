@@ -2,17 +2,17 @@ from filePaths import *
 from typing import List
 import os
 
-overlay = 'arm9'
+overlay = 'itcm'
 file_name = f'pmdsky_{overlay}'
-start_label_us = 'sub_0205AE28'
-start_label_other = 'sub_0205B128'
+start_label_us = None
+start_label_other = None
 current_line_us = None
 current_line_other = None
 
 use_transformed = False
 
 if use_transformed:
-  if overlay == 'arm9':
+  if overlay == 'arm9' or overlay == 'itcm':
     overlay_prefix = overlay
   else:
     overlay_prefix = f'ov{overlay}'
