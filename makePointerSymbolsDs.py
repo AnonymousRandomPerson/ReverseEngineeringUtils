@@ -50,11 +50,16 @@ start_address = 0x0231741C # ov11 EU
 start_address = 0x02350908 # ov29 EU
 
 start_address = 0x02090BBC # main JP
+start_address = 0x023196F0 # ov00 JP
 start_address = 0x0233C6F8 # ov01 JP
 start_address = 0x02347FC8 # ov03 JP
+start_address = 0x023413D4 # ov05 JP
+start_address = 0x0234013C # ov08 JP
+start_address = 0x022C5A7C # ov10 JP
 start_address = 0x02317FA0 # ov11 JP
+start_address = 0x02350F7C # ov29 JP
 
-start_address = 0x02090BBC # main JP
+start_address = 0x023413D4 # ov05 JP
 
 REGION_US = 'US'
 REGION_EU = 'EU'
@@ -65,7 +70,7 @@ REGION_MACROS = {
   'JAPAN': REGION_JP,
 }
 
-region = REGION_JP
+region = REGION_US
 
 pointer_prefix = ''
 pointer_suffix = ''
@@ -80,28 +85,12 @@ min_address = start_address
 end_address = None
 trailing_spaces = '\t'
 name_custom_functions = False
-autodetect_pointers = False
+autodetect_pointers = True
 
 min_address = 0x02000000
 end_address = 0x02400000
 
 custom_pointers = set([
-  0x0209A740,
-  0x0209B32C,
-  0x0209B408,
-  0x0209B488,
-  0x0209BDF8,
-  0x0209C29C,
-  0x0209C29D,
-  0x0209C29E,
-  0x020A45C8,
-  0x020B112C,
-  0x020B1234,
-  0x020B12A0,
-  0x022550FF,
-  0x022A92C0,
-  0x022A92C4,
-  0x022AA0FC,
 ])
 
 @dataclass
@@ -209,8 +198,8 @@ for line in raw_text:
     current_region = current_regions[-1]
 
   if current_region is None or region in current_region.active_regions:
-    if ':' in line_strip:
-      print(line_strip[:-1], hex(current_address))
+    # if ':' in line_strip:
+    #   print(line_strip[:-1], hex(current_address))
     if line_strip.startswith('.byte'):
       comma_split = line_strip.split(',')
 
@@ -340,8 +329,6 @@ for line in replace_lines:
   if line.address in bin_line_memory_map:
     pointer_line = bin_line_memory_map[line.address]
     if line.address != pointer_line.address:
-      if pointer_line.address == 0x0209C29C:
-        pass
       old_pointer_line = pointer_line
       comma_split = pointer_line.new_line[6:-1].split(', ')
       insert_index_whole = bin_lines.index(pointer_line)
@@ -364,8 +351,6 @@ for line in replace_lines:
 
     pointer_line.changed = True
     prefix_lines = pointer_line.prefix_lines
-    if pointer_line.address == 0x0209C29C:
-      pass
     if len(prefix_lines) == 0:
       for prefix_line in line.prefix_lines:
         prefix_lines.append(prefix_line)
@@ -381,10 +366,7 @@ def combine_byte_string(current_byte_string: str):
   return f'{trailing_spaces}.byte {", ".join(current_byte_string)}\n'
 
 for group in bin_line_groups:
-  changed = any([bin_line.changed for bin_line in group.bin_lines])
-  if len(group.bin_lines) and group.bin_lines[0].address == 0x0209C29C:
-    pass
-  if changed:
+  if any([bin_line.changed for bin_line in group.bin_lines]):
     group_line_strip = group.raw_line.lstrip()
     if group_line_strip.startswith('.byte'):
       current_byte_string: List[str] = []

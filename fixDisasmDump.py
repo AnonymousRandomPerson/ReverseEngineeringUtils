@@ -80,8 +80,7 @@ thumb_start_replacements.append(('\tsvc #', '\tswi '))
 arm_start_replacements.append(('\tsvc #', '\tswi '))
 
 shift_replacements = ['lsr', 'lsl', 'asr', 'ror']
-
-overlay_files = ['itcm']
+overlay_files = ['34']
 for overlay_file in overlay_files:
   missing_functions = set()
   if 'main' in overlay_file or overlay_file == 'itcm' or overlay_file == 'wram' or overlay_file == 'arm7':

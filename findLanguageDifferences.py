@@ -2,10 +2,10 @@ from filePaths import *
 from typing import List
 import os
 
-overlay = 'itcm'
+overlay = '34'
 file_name = f'pmdsky_{overlay}'
-start_label_us = None
-start_label_other = None
+start_label_us = 'ov34_022DCE8C'
+start_label_other = 'ov34_022DE4A0'
 current_line_us = None
 current_line_other = None
 

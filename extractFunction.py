@@ -5,10 +5,10 @@ from filePaths import PRET_PMDRED_FOLDER
 from textUtils import *
 from transformAsm import get_asm_unified, transform_asm
 
-function_location = 'code_807B2D8'
-function_name = 'DecideMovement'
-function_header = 'struct void %s(struct DungeonEntity *pokemon, bool8 showRunAwayEffect)' % function_name
-new_location = 'dungeon_ai_movement'
+function_location = 'code_8042818'
+function_name = 'sub_8042818'
+function_header = f'void {function_name}(u8 a0, bool8 a1)'
+new_location = 'code_804267C'
 next_function_address = None
 
 def overwrite_file(file: TextIOWrapper, text: str):
@@ -26,25 +26,25 @@ remove_old_asm = False
 with open(old_asm_path, 'r+') as file:
   contents = file.read()
   function_index = index_before(contents, '\tthumb_func_start ' + function_name)
-  function_end_index = index_after(contents, '\tthumb_func_end %s\n' % function_name, function_index)
+  function_end_index = index_after(contents, f'\tthumb_func_end {function_name}\n', function_index)
   function_text = contents[function_index:function_end_index]
   after_function_text = contents[function_end_index:]
 
   try:
     next_function_name = text_between(after_function_text, 'thumb_func_start ', '\n')
   except AssertionError:
-    print('No function found after %s.' % function_name)
+    print(f'No function found after {function_name}.')
     next_function_name = None
 
   if next_function_name:
     if 'sub_' in next_function_name:
       new_asm_location = next_function_name.replace('sub_', 'code_')
     elif next_function_address is None:
-      print('Next ASM function is already named %s. Enter the next address manually.' % next_function_name)
+      print(f'Next ASM function is already named {next_function_name}. Enter the next address manually.')
       exit(0)
     else:
       new_asm_location = 'code_' + next_function_address
-      print('Next ASM function is already named. Using manual function address for file name: %s.' % new_asm_location)
+      print(f'Next ASM function is already named. Using manual function address for file name: {new_asm_location}.')
   else:
     new_asm_location = None
 
@@ -77,49 +77,49 @@ if new_asm_location:
 if existing_file:
   with open(new_location_header, 'r+') as file:
     contents = file.read()
-    function_header_insert ="""%s;
-""" % (function_header)
+    function_header_insert =f"""{function_header};
+"""
     contents = insert_before(contents, '\n#endif', function_header_insert)
     overwrite_file(file, contents)
 else:
   with open(new_location_header, 'w') as file:
     caps_new_location = new_location.upper()
 
-    source = """#ifndef GUARD_%s_H
-#define GUARD_%s_H
+    source = f"""#ifndef GUARD_{caps_new_location}_H
+#define GUARD_{caps_new_location}_H
 
-%s;
+{function_header};
 
 #endif
-""" % (caps_new_location, caps_new_location, function_header)
+"""
     file.write(source)
 
 new_location_source = os.path.join(PRET_PMDRED_FOLDER, 'src', new_location + '.c')
 asm_unified = get_asm_unified(function_text)
-asm_unified = """NAKED
-%s
-{
-    %s
-}""" % (function_header, asm_unified)
+asm_unified = f"""NAKED
+{function_header}
+{{
+    {asm_unified}
+}}"""
 if existing_file:
   with open(new_location_source, 'r+') as file:
     contents = file.read()
-    contents = contents + '\n' + asm_unified + '\n'
+    contents = f'{contents}\n{asm_unified}\n'
     overwrite_file(file, contents)
 else:
   with open(new_location_source, 'w') as file:
-    source = """#include "global.h"
-#include "%s.h"
+    source = f"""#include "global.h"
+#include "{new_location}.h"
 
-%s
-""" % (new_location, asm_unified)
+{asm_unified}
+"""
     file.write(source)
 
 ld_script = os.path.join(PRET_PMDRED_FOLDER, 'ld_script.txt')
 with open(ld_script, 'r+') as file:
   contents = file.read()
-  new_asm_file = 'asm/%s.o(.text);\n' % new_asm_location
-  anchor_file = 'asm/%s.o(.text);\n' % function_location
+  new_asm_file = f'asm/{new_asm_location}.o(.text);\n'
+  anchor_file = f'asm/{function_location}.o(.text);\n'
   if remove_old_asm:
     contents = contents.replace('        ' + anchor_file, '')
   else:
@@ -127,7 +127,7 @@ with open(ld_script, 'r+') as file:
       if new_asm_location:
         contents = contents.replace(anchor_file, new_asm_file)
     else:
-      script_insert = ('        src/%s.o(.text);\n' % new_location)
+      script_insert = (f'        src/{new_location}.o(.text);\n')
       if new_asm_location:
         script_insert = script_insert + '        ' + new_asm_file
       contents = insert_after(contents, anchor_file, script_insert)

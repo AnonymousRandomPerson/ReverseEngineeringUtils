@@ -69,5 +69,5 @@ def get_asm_unified(raw_asm=None):
       raw_asm = file.read()
   function_name = text_between(raw_asm, 'thumb_func_start ', '\n')
   asm_unified = text_between(raw_asm, function_name + ':\n', '\n\tthumb_func_end')
-  asm_unified = '"' + asm_unified.replace('\t', '').replace('\n', '\\n"\n"') + '"'
-  return 'asm_unified(%s);' % asm_unified
+  asm_unified = f'"{asm_unified.replace('\t', '').replace('\n', '\\n"\n"')}"'
+  return f'asm_unified({asm_unified});'
