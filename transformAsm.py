@@ -32,27 +32,7 @@ def transform_asm():
     line_decompme = line
     if 'bls' not in line and 'bcs' not in line:
       line_decompme = re.sub(r'^(\t\w+)s ', r'\1 ', line)
-    if not re.search(r'pop \{r[01]\}', line_decompme) and not re.search(r'bx r[01]', line_decompme):
-      transformed_asm_decompme += line_decompme + '\n'
-
-  pop_index = transformed_asm_decompme.rfind('pop')
-  if pop_index >= 0:
-    last_pop_end = transformed_asm_decompme.find('}', transformed_asm_decompme.rfind('pop'))
-    transformed_asm_decompme = transformed_asm_decompme[:last_pop_end] + ', pc' + transformed_asm_decompme[last_pop_end:]
-  else:
-    has_word_end = False
-    has_word = True
-    line_start = len(transformed_asm_decompme)
-    while (has_word):
-      prev_line_start = line_start
-      line_start = transformed_asm_decompme.rfind('\n', 0, line_start - 1)
-      has_word = '.word' in transformed_asm_decompme[line_start:prev_line_start]
-      if has_word:
-        has_word_end = True
-    pop_instruction = '  pop {pc}'
-    if has_word_end:
-      pop_instruction = '\n' + pop_instruction
-    transformed_asm_decompme = transformed_asm_decompme[:prev_line_start] + pop_instruction + transformed_asm_decompme[prev_line_start:]
+    transformed_asm_decompme += line_decompme + '\n'
 
   transformed_file = os.path.join('asm', 'transformed.txt')
   with open(transformed_file, 'w') as file:
@@ -71,3 +51,6 @@ def get_asm_unified(raw_asm=None):
   asm_unified = text_between(raw_asm, function_name + ':\n', '\n\tthumb_func_end')
   asm_unified = f'"{asm_unified.replace('\t', '').replace('\n', '\\n"\n"')}"'
   return f'asm_unified({asm_unified});'
+
+if __name__ == '__main__':
+  transform_asm()

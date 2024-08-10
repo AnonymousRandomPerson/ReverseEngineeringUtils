@@ -5,10 +5,10 @@ from filePaths import PRET_PMDRED_FOLDER
 from textUtils import *
 from transformAsm import get_asm_unified, transform_asm
 
-function_location = 'code_8042818'
-function_name = 'sub_8042818'
-function_header = f'void {function_name}(u8 a0, bool8 a1)'
-new_location = 'code_804267C'
+function_location = 'code_8085EB0'
+function_name = 'sub_80861A8'
+function_header = f'void {function_name}(void)'
+new_location = 'code_80861A8'
 next_function_address = None
 
 def overwrite_file(file: TextIOWrapper, text: str):
