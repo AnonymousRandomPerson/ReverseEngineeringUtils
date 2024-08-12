@@ -254,9 +254,9 @@ pokemon_metadata = {
   'Larvitar': PokemonMetadata(246, 10.5),
   'Pupitar': PokemonMetadata(247, -6.0),
   'Tyranitar': PokemonMetadata(248, -16.0),
-  'Lugia': PokemonMetadata(249, -5.2),
-  'Ho-oh': PokemonMetadata(250, -5.2),
-  'Celebi': PokemonMetadata(251, -5.0),
+  'Lugia': PokemonMetadata(249, 100),
+  'Ho-Oh': PokemonMetadata(250, 100),
+  'Celebi': PokemonMetadata(251, 100),
   'Treecko': PokemonMetadata(252, 14.8),
   'Grovyle': PokemonMetadata(253, -5.0),
   'Sceptile': PokemonMetadata(254, -12.2),
@@ -506,7 +506,23 @@ mapped_pokemon_names = {
   'Nidoran-M': 'Nidoran♂',
 }
 
+form_pokemon = set([
+  'Burmy',
+  'Wormadam',
+  'Shellos',
+  'Gastrodon',
+])
+
 def map_pokemon_name(name: str):
+  if name.startswith('Unown'):
+    return 'Unown'
+
   if name in mapped_pokemon_names:
     return mapped_pokemon_names[name]
   return name
+
+def get_form(name: str) -> tuple[str, str]:
+  split_name = name.split('-')
+  if len(split_name) == 2 and split_name[0] in form_pokemon:
+    return (split_name[0], split_name[1])
+  return (name, None)

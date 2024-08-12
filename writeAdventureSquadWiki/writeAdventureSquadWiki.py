@@ -9,7 +9,8 @@ MONSTER_HOUSE_FILE = 'monster_house.txt'
 
 DEST_FILE = 'wiki.txt'
 
-type_style = 'fire'
+type_style = 'electric'
+recruitable = True
 
 @dataclass
 class IntRange:
@@ -23,6 +24,7 @@ class IntRange:
 
 class PokemonInfo:
   name: str
+  form: str = None
   metadata: PokemonMetadata
   levels: IntRange = None
   floors: list[IntRange]
@@ -30,8 +32,8 @@ class PokemonInfo:
   boss: bool = False
 
   def __init__(self, name: str):
-    self.name = name
-    self.metadata = pokemon_metadata[name]
+    self.name, self.form = get_form(name)
+    self.metadata = pokemon_metadata[self.name]
     self.floors = []
 
   def add_level(self, level: int):
@@ -45,7 +47,7 @@ class PokemonInfo:
   def add_floor(self, floor: int):
     if len(self.floors) == 0:
       self.floors.append(IntRange(floor, floor))
-    elif floor == self.floors[-1].end + 1:
+    elif floor == self.floors[-1].end or floor == self.floors[-1].end + 1:
       self.floors[-1].end = floor
     else:
       self.floors.append(IntRange(floor, floor))
@@ -95,6 +97,8 @@ def get_floors_string(floors: list[IntRange]) -> str:
 def write_encountered_table():
   all_pokemon_info: dict[str, PokemonInfo] = {}
   wii_connect_pokemon = None
+  wonder_mail_w_pokemon = None
+  regigigas = False
   with open(POKEMON_FILE, 'r') as pokemon_file:
     current_floor = None
     boss = False
@@ -126,6 +130,10 @@ def write_encountered_table():
           print(f'Could not find Pokémon {pokemon} to add Mystery Part to.')
       elif 'monthly' in line:
         wii_connect_pokemon = line.split(' ')[0]
+      elif 'Regigigas' in line:
+        regigigas = True
+      elif 'RC24' in line:
+        wonder_mail_w_pokemon = line.split(' ')[0]
 
   encountered_table = \
   f"""==Pokémon encountered==
@@ -139,20 +147,39 @@ def write_encountered_table():
     levels = pokemon_info.levels
     recruit_rate = pokemon_info.metadata.recruit_rate
 
-    if pokemon_info.mystery_part:
-      mystery_part = '|part=yes'
+    if pokemon_info.form:
+      form = f'|{pokemon_info.form}'
     else:
-      mystery_part = ''
+      form = ''
+
+    recruit_rate_string = f'{recruit_rate:.1f}'
+    if pokemon_info.mystery_part:
+      recruit_rate_string = f'{{{{tt|{recruit_rate_string}|Requires Mystery Part or Secret Slab and Slowking\'s Certification Rank}}}}'
+    if not recruitable and not pokemon_info.boss:
+      recruit_rate_string = '0'
 
     if pokemon_info.boss:
       boss = '|boss=yes'
     else:
       boss = ''
 
-    encountered_table += f'{{{{mdloc|{dex_number:03d}|{name}|{floors}|{levels}|{recruit_rate:.1f}{mystery_part}{boss}}}}}\n'
+    if name == 'Unown':
+      unown = '|unownrand=yes'
+    else:
+      unown = ''
 
+    encountered_table += f'{{{{mdloc|{dex_number:03d}|{name}|{floors}|{levels}|{recruit_rate_string}{form}{boss}{unown}}}}}\n'
+
+  footer_notes = []
   if wii_connect_pokemon is not None:
-    footer_text = f'|{wii_connect_pokemon} only appears once per month with WiiConnect24.'
+    footer_notes.append(f'{wii_connect_pokemon} only appears once per month with WiiConnect24.')
+  if wonder_mail_w_pokemon is not None:
+    footer_notes.append(f'{wonder_mail_w_pokemon} only appears with a challenge letter obtained via Wonder Mail W over Wi-Fi.')
+  if regigigas:
+    footer_notes.append('Regigigas appears if Regirock, Regice, and Registeel have been recruited.')
+
+  if len(footer_notes) > 0:
+    footer_text = f'|{'\n'.join(footer_notes)}'
   else:
     footer_text = ''
 
@@ -202,7 +229,7 @@ def write_items_table():
         floor_range = IntRange(int(start), int(end))
 
       elif '\t' in line:
-        item_name = line.split('\t')[0]
+        item_name = map_item_name(line.split('\t')[0])
         if item_name not in all_item_info:
           all_item_info[item_name] = ItemInfo(item_name)
         all_item_info[item_name].add_floors(floor_range)
@@ -243,7 +270,7 @@ def write_subitem_table(file_name: str, header: str):
 
   for split_item_list in sorted(split_item_lists):
     for line in split_item_list.raw_item_data:
-      item_name = line.split('\t')[0]
+      item_name = map_item_name(line.split('\t')[0])
       if item_name not in all_item_info:
         all_item_info[item_name] = ItemInfo(item_name)
       all_item_info[item_name].add_floors(split_item_list.floor_range)
@@ -265,7 +292,7 @@ def write_footer():
 {{DoubleProjectTag|Locations|Sidegames}}
 
 [[Category:Pokémon Mystery Dungeon (WiiWare) locations]]
-[[Category:Mystery dungeons]]"""
+[[Category:Dungeons containing Legendary or Mythical Pokémon]]"""
 
 with open(DEST_FILE, 'w') as dest_file:
   dest_file.write(write_encountered_table())

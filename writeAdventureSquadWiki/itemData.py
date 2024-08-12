@@ -12,18 +12,26 @@ class ItemCategory(Enum):
   SEED = auto()
   DRINK = auto()
   EVOLUTION = auto()
+  KEY = auto()
   TM = auto()
   ORB = auto()
 
 FOOD_ITEMS = set([
   'Apple',
   'Big Apple',
+  'Huge Apple',
   'Grimy Food',
   'Banana',
   'Chestnut',
   'Bitter Chocolate',
   'White Chocolate',
   'Sweet Chocolate',
+  'Blazing Candy',
+  'Stormy Candy',
+  'Light Candy',
+  'Four-Leaf Cookie',
+  'Square Cookie',
+  'Star Cookie',
 ])
 
 ROCK_ITEMS = set([
@@ -42,7 +50,7 @@ SPIKE_ITEMS = set([
 DRINK_ITEMS = set([
   'Max Elixir',
   'Mix Elixir',
-  'Team Elixir',
+  'PP All',
   'Calcium',
   'Ginseng',
   'Iron',
@@ -157,6 +165,18 @@ TM_MOVES = set([
   'Wide Slash',
 ])
 
+mapped_item_names = {
+  'Team Elixir': 'PP All',
+  'Wildfire Candy': 'Blazing Candy',
+  'Tempest Candy': 'Stormy Candy',
+  'Radiance Candy': 'Light Candy',
+}
+
+def map_item_name(name: str):
+  if name in mapped_item_names:
+    return mapped_item_names[name]
+  return name
+
 def get_item_category(item: str):
   if item == 'Poké':
     return ItemCategory.POKE
@@ -176,12 +196,16 @@ def get_item_category(item: str):
     return ItemCategory.ROCK
   if item in SPIKE_ITEMS:
     return ItemCategory.SPIKE
-  if item.endswith('Band') or item.endswith('Belt') or item.endswith('Cap') or item.endswith('Ribbon') or item.endswith('Scarf'):
+  if item.endswith('Band') or item.endswith('Belt') or item.endswith('Bow') or item.endswith('Cap') or item.endswith('Ribbon') or item.endswith('Scarf'):
     return ItemCategory.SCARF
-  if item.endswith('Lens') or item.endswith('scope') or item.endswith('Specs'):
+  if item.endswith('Lens') or item.lower().endswith('scope') or item.endswith('Specs'):
     return ItemCategory.SPECS
   if item in TM_MOVES:
     return ItemCategory.TM
+  if item == 'Key':
+    return ItemCategory.KEY
+  if item == 'Gracidea':
+    return ItemCategory.EVOLUTION
   raise ValueError('Unknown category for item: ' + item)
 
 def get_item_link(item: str):
@@ -207,6 +231,8 @@ def get_item_link(item: str):
     return 'Scarf (Mystery Dungeon)'
   if category == ItemCategory.SPECS:
     return 'Glasses'
+  if category == ItemCategory.KEY:
+    return 'Key (Mystery Dungeon)'
 
 def get_item_sprite(item: str):
   if item == 'Poké':
@@ -219,8 +245,12 @@ def get_item_sprite(item: str):
     return 'MDBag Scope TDS Sprite'
   if item.endswith('Specs'):
     return 'MDBag Glasses TDS Sprite'
-  if item.endswith('Chocolate'):
+  if item.endswith('Chocolate') or item.endswith('Candy'):
     return 'MDBag Sweet Chocolate Sprite'
+  if item.endswith('Cookie'):
+    return 'MDBag Four-Leaf Cookie Sprite'
+  if item == 'Gracidea':
+    return 'MDBag Gracidea S Sprite'
   if item in LOOKALIKE_ITEMS:
     if item.endswith('Seed'):
       return 'MDBag Seed TDS Sprite'
@@ -244,3 +274,5 @@ def get_item_sprite(item: str):
     return 'MDBag Drink TDS Sprite'
   if category == ItemCategory.SCARF:
     return 'MDBag Scarf Sprite'
+  if category == ItemCategory.KEY:
+    return 'MDBag Key Sprite'
