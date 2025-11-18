@@ -2,14 +2,15 @@ import os, re
 from dataclasses import dataclass
 from typing import Dict, List, Any
 
-start_address = 0x811601C
+start_address = 0x9E60000
 current_address = start_address
 include_unaligned_pointers = False
 min_address = start_address
 trailing_spaces = ''
 search_4byte_addresses = False
+max_pointer_distance = 0x5000
 
-asm_end = 0x80B6904
+asm_end = 0
 
 custom_pointers = set([
 ])
@@ -154,7 +155,7 @@ for line in raw_text:
           line_strip = line_strip.replace(macro, replace)
       if '{' in line_strip or '}' in line_strip:
         print('Found unknown string macro in line:', line_strip[:-1])
-      
+
       bin_size = len(line_strip.split('"')[1].replace('\\0', '0').replace('\\n', 'n'))
     elif line_strip.startswith('.2byte'):
       bin_size = 2
@@ -212,7 +213,7 @@ for line in bin_lines:
     in_target_range = False
     if not in_target_range:
       continue
-  
+
   new_line_strip = line.new_line.lstrip()
   replace_line = None
   if new_line_strip.startswith('.byte'):
@@ -225,14 +226,14 @@ for line in bin_lines:
     match = re.search(r'0x(82[0-F]{5})\n', new_line_strip)
     if match:
       address = match.group(1)
-      replace_line = lambda pointer_name : new_line_strip.replace('0x82', 'gUnknown_82')
+      replace_line = lambda : new_line_strip.replace('0x82', 'gUnknown_82')
 
   if replace_line:
     address_int = int(f'0x{address}', 16)
 
     address_alignment = address_int % 4
     if include_unaligned_pointers or address_alignment <= 1:
-      in_data_range = address_int <= current_address and address_int >= min_address
+      in_data_range = address_int <= current_address and address_int >= min_address and (max_pointer_distance is None or abs(line.address - address_int) < max_pointer_distance)
       potential_data_pointer = in_data_range and address_alignment == 0
       potential_function_pointer = address_int < asm_end and address_alignment == 1
       if potential_data_pointer or address_int in custom_pointers:
@@ -277,7 +278,7 @@ for line in replace_lines:
         bin_lines.insert(insert_index_whole + i, new_line)
         pointer_line.group.bin_lines.insert(insert_index_group + i, new_line)
         bin_line_memory_map[new_address] = new_line
-    
+
     pointer_line.changed = True
     prefix_lines = pointer_line.prefix_lines
     if len(prefix_lines) == 0:
@@ -292,7 +293,7 @@ for address in sorted(missing_addresses):
 new_lines = []
 
 def combine_byte_string(current_byte_string: str):
-  return f'{trailing_spaces}.byte {", ".join(current_byte_string)}\n' 
+  return f'{trailing_spaces}.byte {", ".join(current_byte_string)}\n'
 
 for group in bin_line_groups:
   changed = any([bin_line.changed for bin_line in group.bin_lines])
@@ -317,7 +318,7 @@ for group in bin_line_groups:
           for prefix_line in line.prefix_lines:
             new_lines.append(prefix_line)
           current_byte_string.append(line_strip[6:-1])
-        else: 
+        else:
           for prefix_line in line.prefix_lines:
             new_lines.append(prefix_line)
 

@@ -1,6 +1,6 @@
 import os
 
-start_address = 0xF891C
+start_address = 0x1E60000
 current_address = start_address
 
 with open(os.path.join('pointer', 'raw_reference.txt'), 'r') as raw_file:
@@ -13,6 +13,8 @@ def upper_hex(address):
 new_text = []
 current_incbin_start = None
 for line in raw_text:
+  # if line.startswith('@ replacing'):
+  #   continue
   bin_size = 0
   if line.startswith('.byte'):
     bin_size = line.count('0x')
@@ -34,9 +36,9 @@ for line in raw_text:
       address_align = current_address % 4
       if address_align > 0:
         bin_size += 4 - address_align
-    
+
     new_text.append(line)
-  
+
   current_address += bin_size
 
 if current_incbin_start is not None:
